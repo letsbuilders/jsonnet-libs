@@ -6,13 +6,12 @@
       local apiVersion = { apiVersion: 's3.aws.crossplane.io/v1beta1' },
       bucket:: {
         local kind = { kind: 'Bucket' },
-        new(name, namespace):: apiVersion + kind + self.mixin.metadata.withName(name) + self.mixin.metadata.withNamespace(namespace),
+        new(name):: apiVersion + kind + self.mixin.metadata.withName(name),
         mixin:: {
           // Standard object metadata.
           metadata:: {
             local __metadataMixin(metadata) = { metadata+: metadata },
             withName(name):: self + __metadataMixin({ name: name }),
-            withNamespace(namespace):: self + __metadataMixin({ namespace: namespace }),
           },
           spec:: {
             local __specMixin(spec) = { spec+: spec },
@@ -37,19 +36,54 @@
         },
       },
     },
+    v1alpha2:: {
+      local apiVersion = { apiVersion: 's3.aws.crossplane.io/v1alpha2' },
+      bucketPolicy:: {
+        local kind = { kind: 'BucketPolicy' },
+        new(name, bucketName, region, statements, deletionPolicy='Delete'):: apiVersion + kind
+          + self.mixin.metadata.withName(name)
+          + self.mixin.spec.deletionPolicy(deletionPolicy)
+          + self.mixin.spec.forProvider.new(bucketName, region, statements),
+        mixin:: {
+          // Standard object metadata.
+          metadata:: {
+            local __metadataMixin(metadata) = { metadata+: metadata },
+            withName(name):: self + __metadataMixin({ name: name }),
+          },
+          spec:: {
+            local __specMixin(spec) = { spec+: spec },
+            deletionPolicy(deletionPolicy):: __specMixin({ deletionPolicy+: deletionPolicy }),
+            mixinInstance(spec):: __specMixin(spec),
+            forProvider:: {
+              local __forProviderMixin(forProvider) = __specMixin({ forProvider+: forProvider }),
+              new(bucketName, region, statements, version='2012-10-17')::
+                self + self.withRegion(region) + self.withBucketName(bucketName) + self.withVersion(version) + self.withStatements(statements),
+              withBucketName(name):: self + __forProviderMixin({bucketName: name}),
+              withRegion(region):: self + __forProviderMixin({region: region}),
+              withStatements(statements):: self + __forProviderMixin({statements: statements}),
+              withVersion(version):: self + __forProviderMixin({version: version}),
+            },
+            providerConfigRef:: {
+              local __providerConfigRefMixin(providerConfigRef) = __specMixin({ providerConfigRef+: providerConfigRef }),
+              mixinInstance(providerConfigRef):: __providerConfigRefMixin(providerConfigRef),
+              new(name):: self + __providerConfigRefMixin({ name: name }),
+            },
+          }
+        }
+      }
+    }
   },
   identity:: {
     v1beta1:: {
       local apiVersion = { apiVersion: 'identity.aws.crossplane.io/v1beta1' },
       role:: {
         local kind = { kind: 'IAMRole' },
-        new(name, namespace):: apiVersion + kind + self.mixin.metadata.withName(name) + self.mixin.metadata.withNamespace(namespace),
+        new(name):: apiVersion + kind + self.mixin.metadata.withName(name),
         mixin:: {
           // Standard object metadata.
           metadata:: {
             local __metadataMixin(metadata) = { metadata+: metadata },
             withName(name):: self + __metadataMixin({ name: name }),
-            withNamespace(namespace):: self + __metadataMixin({ namespace: namespace }),
           },
           spec:: {
             local __specMixin(spec) = { spec+: spec },
