@@ -41,6 +41,7 @@ local awsUtil(config) = {
   allowRoleToBucketPolicy(role, bucket)::
     local bucketPolicy = aws.s3.v1alpha2.bucketPolicy;
     local bucketName = bucket.metadata.name;
+    local bucketRegion = bucket.spec.forProvider.locationConstraint;
     local roleName = role.metadata.name;
 
     local statements = [
@@ -76,7 +77,7 @@ local awsUtil(config) = {
       }
     ];
 
-    bucketPolicy.new(name=bucketName, bucketName=bucketName, region=config.region, statements=statements)
+    bucketPolicy.new(name=bucketName, bucketName=bucketName, region=bucketRegion, statements=statements)
     + bucketPolicy.mixin.spec.providerConfigRef.new(config.crossplaneProvider),
 
 };
