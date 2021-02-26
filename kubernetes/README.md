@@ -31,7 +31,7 @@ The below example will create an autoscaled `Deployment` with 2 containers, a `S
         {
           // Sidecar container
           name: 'metrics',
-          image: 'public.ecr.aws/bitnami/nginx-exporter:laterst',
+          image: 'public.ecr.aws/bitnami/nginx-exporter:latest',
           port: 9090,
         }
       ],
