@@ -1,6 +1,6 @@
 // Helper utilities for AWS resources
 
-local awsUtil(config) = {
+function(config) {
   local aws = import 'aws.libsonnet',
 
   local s = self,
@@ -68,9 +68,7 @@ local awsUtil(config) = {
         principal: {
           awsPrincipals: [
             {
-              iamRoleArnRef: {
-                name:roleName
-              }
+              iamRoleArn: 'arn:aws:iam::%(accountId)s:role/%(roleName)s' % {accountId: config.accountId, roleName: roleName},
             }
           ]
         }
@@ -80,7 +78,4 @@ local awsUtil(config) = {
     bucketPolicy.new(name=bucketName, bucketName=bucketName, region=bucketRegion, statements=statements)
     + bucketPolicy.mixin.spec.providerConfigRef.new(config.crossplaneProvider),
 
-};
-{
-  awsUtil:: awsUtil
 }
