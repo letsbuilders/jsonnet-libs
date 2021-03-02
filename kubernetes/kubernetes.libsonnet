@@ -5,10 +5,23 @@ local containerSpecs(containersConfig) = [
   local container = k.core.v1.container;
   local port = k.core.v1.containerPort;
 
+  // Convert key=value pairs to name,value objects
+  // We use key=value pairs in `envVars` to be able to easily override them between environments
+  local envVars =
+    if std.objectHas(cont, 'envVars') && std.isObject(cont.envVars)
+    then
+      [{ name: envvar, value: cont.envVars[envvar] } for envvar in std.objectFields(cont.envVars)]
+    else
+      [];
+
+  //
+  local extraEnvVars = if std.objectHas(cont, 'extraEnvVars') && std.isArray(cont.extraEnvVars) then cont.extraEnvVars else [];
+
   container.new(cont.name, cont.image)
   + container.withCommand(if std.objectHas(cont, 'command') then cont.command else [])
-  + container.withEnv(if std.objectHas(cont, 'envVars') then cont.envVars else [])
+  + container.withEnv(envVars + extraEnvVars)
   + container.withEnvFrom(if std.objectHas(cont, 'envFrom') then cont.envFrom else [])
+  + container.withImagePullPolicy(if std.objectHas(cont, 'imagePullPolicy') then cont.imagePullPolicy else 'IfNotPresent')
   + container.withPorts(
     // Single port
     if std.objectHas(cont, 'port')
@@ -17,7 +30,7 @@ local containerSpecs(containersConfig) = [
     else if std.objectHas(cont, 'ports')
     then
       // TODO implement support for multiple ports
-      std.trace('WARNING: multiple ports are not yet supported', container.withPorts([]))
+      std.trace('WARNING: multiple ports are not yet supported', [])
     else
       []
   )
@@ -70,7 +83,7 @@ local ingressSpec(ingressConfig, serviceObject) =
     { hosts: [ingressConfig.host], secretName: '%s-ingress-tls' % serviceObject.metadata.name },
   ]);
 
-local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress=false, ingressConfig={}) = {
+local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress=false, withServiceAccountObject={}, ingressConfig={}) = {
   local dc = deploymentConfig,
   local ic = ingressConfig,
   local containers = containerSpecs(dc.containers),
@@ -82,7 +95,8 @@ local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress
 
   deployment: deployment.new(dc.name, replicas=1, containers=containers)
               // Hide replicas to avoid conflicts with HPA
-              + if std.objectHas(dc, 'autoscaling') then { spec+: { replicas:: null } } else {},
+              + if std.objectHas(dc, 'autoscaling') then { spec+: { replicas:: null } } else {}
+              + if withServiceAccountObject then deployment.mixin.spec.template.spec.withServiceAccountName(withServiceAccountObject.metadata.name) else {},
 
   // We must generate a service if an ingress was requested
   service: if withService || withIngress then util.serviceFor(s.deployment) else {},
