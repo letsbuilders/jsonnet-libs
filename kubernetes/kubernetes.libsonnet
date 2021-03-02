@@ -93,10 +93,17 @@ local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress
   local hpa = k.autoscaling.v1.horizontalPodAutoscaler,
   local deployment = k.apps.v1.deployment,
 
-  deployment: deployment.new(dc.name, replicas=1, containers=containers)
-              // Hide replicas to avoid conflicts with HPA
-              + if std.objectHas(dc, 'autoscaling') then { spec+: { replicas:: null } } else {}
-              + if withServiceAccountObject then deployment.mixin.spec.template.spec.withServiceAccountName(withServiceAccountObject.metadata.name) else {},
+  deployment:
+    deployment.new(dc.name, replicas=1, containers=containers)
+    // Hide replicas to avoid conflicts with HPA
+    + (if std.objectHas(dc, 'autoscaling') then { spec+: { replicas:: null } } else {})
+    + (
+      if std.length(withServiceAccountObject) > 0
+      then
+        deployment.mixin.spec.template.spec.withServiceAccountName(withServiceAccountObject.metadata.name)
+      else
+        {}
+    ),
 
   // We must generate a service if an ingress was requested
   service: if withService || withIngress then util.serviceFor(s.deployment) else {},

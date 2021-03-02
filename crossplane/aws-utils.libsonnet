@@ -13,16 +13,16 @@ function(config) {
           Sid: '',
           Effect: 'Allow',
           Principal: {
-            'Federated': 'arn:aws:iam::%s:oidc-provider/%s' % [accountId, oidcUrl]
+            Federated: 'arn:aws:iam::%s:oidc-provider/%s' % [accountId, oidcUrl],
           },
           Action: 'sts:AssumeRoleWithWebIdentity',
           Condition: {
             StringEquals: {
               // This works because magic. Deal with it.
-              [std.format('%s:sub', oidcUrl)]: 'system:serviceaccount:%s:%s' % [namespace, serviceAccountName]
-            }
-          }
-        }
+              [std.format('%s:sub', oidcUrl)]: 'system:serviceaccount:%s:%s' % [namespace, serviceAccountName],
+            },
+          },
+        },
       ],
     },
 
@@ -55,10 +55,10 @@ function(config) {
             {
               // If I use iamRoleArnRef here tanka wants to remove iamRoleArn because it gets added by crossplane
               // https://github.com/crossplane/provider-aws/issues/555
-              iamRoleArn: 'arn:aws:iam::%(accountId)s:role/%(roleName)s' % {accountId: config.accountId, roleName: roleName},
-            }
-          ]
-        }
+              iamRoleArn: 'arn:aws:iam::%(accountId)s:role/%(roleName)s' % { accountId: config.accountId, roleName: roleName },
+            },
+          ],
+        },
       },
       {
         sid: 'List',
@@ -68,11 +68,11 @@ function(config) {
         principal: {
           awsPrincipals: [
             {
-              iamRoleArn: 'arn:aws:iam::%(accountId)s:role/%(roleName)s' % {accountId: config.accountId, roleName: roleName},
-            }
-          ]
-        }
-      }
+              iamRoleArn: 'arn:aws:iam::%(accountId)s:role/%(roleName)s' % { accountId: config.accountId, roleName: roleName },
+            },
+          ],
+        },
+      },
     ];
 
     bucketPolicy.new(name=bucketName, bucketName=bucketName, region=bucketRegion, statements=statements)
