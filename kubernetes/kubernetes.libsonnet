@@ -21,6 +21,7 @@ local containerSpecs(containersConfig) = [
   + container.withCommand(if std.objectHas(cont, 'command') then cont.command else [])
   + container.withEnv(envVars + extraEnvVars)
   + container.withEnvFrom(if std.objectHas(cont, 'envFrom') then cont.envFrom else [])
+  // The 'IfNotPresent' image pull policy will pull the image only if not present: https://kubernetes.io/docs/concepts/containers/images/
   + container.withImagePullPolicy(if std.objectHas(cont, 'imagePullPolicy') then cont.imagePullPolicy else 'IfNotPresent')
   + container.withPorts(
     // Single port
@@ -34,6 +35,7 @@ local containerSpecs(containersConfig) = [
     else
       []
   )
+  // https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits
   + (
     if std.objectHas(cont, 'resourcesRequests')
     then
