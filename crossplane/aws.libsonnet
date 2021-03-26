@@ -40,10 +40,11 @@
       local apiVersion = { apiVersion: 's3.aws.crossplane.io/v1alpha2' },
       bucketPolicy:: {
         local kind = { kind: 'BucketPolicy' },
-        new(name, bucketName, region, statements, deletionPolicy='Delete'):: apiVersion + kind
-                                                                             + self.mixin.metadata.withName(name)
-                                                                             + self.mixin.spec.deletionPolicy(deletionPolicy)
-                                                                             + self.mixin.spec.forProvider.new(bucketName, region, statements),
+        new(name, bucketName, region, statements, deletionPolicy='Delete')::
+          apiVersion + kind
+          + self.mixin.metadata.withName(name)
+          + self.mixin.spec.deletionPolicy(deletionPolicy)
+          + self.mixin.spec.forProvider.new(bucketName, region, statements),
         mixin:: {
           // Standard object metadata.
           metadata:: {
@@ -72,8 +73,74 @@
         },
       },
     },
+    v1alpha3:: {
+      local apiVersion = { apiVersion: 's3.aws.crossplane.io/v1alpha3' },
+      bucketPolicy:: {
+        local kind = { kind: 'BucketPolicy' },
+        new(name, bucketName, region, policy, deletionPolicy='Delete')::
+          apiVersion + kind
+          + self.mixin.metadata.withName(name)
+          + self.mixin.spec.deletionPolicy(deletionPolicy)
+          + self.mixin.spec.forProvider.new(bucketName, region, policy),
+        mixin:: {
+          // Standard object metadata.
+          metadata:: {
+            local __metadataMixin(metadata) = { metadata+: metadata },
+            withName(name):: self + __metadataMixin({ name: name }),
+          },
+          spec:: {
+            local __specMixin(spec) = { spec+: spec },
+            deletionPolicy(deletionPolicy):: __specMixin({ deletionPolicy+: deletionPolicy }),
+            mixinInstance(spec):: __specMixin(spec),
+            forProvider:: {
+              local __forProviderMixin(forProvider) = __specMixin({ forProvider+: forProvider }),
+              new(bucketName, region, policy)::
+                self + self.withRegion(region) + self.withBucketName(bucketName) + self.withPolicy(policy),
+              withBucketName(name):: self + __forProviderMixin({ bucketName: name }),
+              withRegion(region):: self + __forProviderMixin({ region: region }),
+              withPolicy(policy):: self + __forProviderMixin({ policy: policy }),
+            },
+            providerConfigRef:: {
+              local __providerConfigRefMixin(providerConfigRef) = __specMixin({ providerConfigRef+: providerConfigRef }),
+              mixinInstance(providerConfigRef):: __providerConfigRefMixin(providerConfigRef),
+              new(name):: self + __providerConfigRefMixin({ name: name }),
+            },
+          },
+        },
+      },
+    },
   },
   identity:: {
+    v1alpha1:: {
+      local apiVersion = { apiVersion: 'identity.aws.crossplane.io/v1alpha1' },
+      policy:: {
+        local kind = { kind: 'IAMPolicy' },
+        new(name, document)::
+          apiVersion + kind + self.mixin.metadata.withName(name)
+          + self.mixin.spec.forProvider.new(name, document),
+        mixin:: {
+          // Standard object metadata.
+          metadata:: {
+            local __metadataMixin(metadata) = { metadata+: metadata },
+            withName(name):: self + __metadataMixin({ name: name }),
+          },
+          spec:: {
+            local __specMixin(spec) = { spec+: spec },
+            forProvider:: {
+              local __forProviderMixin(forProvider) = __specMixin({ forProvider+: forProvider }),
+              new(name, document):: self + __forProviderMixin({
+                name: name,
+                document: std.manifestJsonEx(document, '  '),
+              }),
+            },
+            providerConfigRef:: {
+              local __providerConfigRefMixin(providerConfigRef) = __specMixin({ providerConfigRef+: providerConfigRef }),
+              new(name):: self + __providerConfigRefMixin({ name: name }),
+            },
+          },
+        },
+      },
+    },
     v1beta1:: {
       local apiVersion = { apiVersion: 'identity.aws.crossplane.io/v1beta1' },
       role:: {
@@ -90,7 +157,7 @@
             mixinInstance(spec):: __specMixin(spec),
             forProvider:: {
               local __forProviderMixin(forProvider) = __specMixin({ forProvider+: forProvider }),
-              new(assumeRolePolicyDocument):: self + __forProviderMixin({ assumeRolePolicyDocument: std.manifestJsonEx(assumeRolePolicyDocument, '') }),
+              new(assumeRolePolicyDocument):: self + __forProviderMixin({ assumeRolePolicyDocument: std.manifestJsonEx(assumeRolePolicyDocument, '  ') }),
               withDescription(description):: self + __forProviderMixin({ description: description }),
               withPath(path):: self + __forProviderMixin({ path: path }),
               withMaxSessionDuration(maxSessionDuration):: self + __forProviderMixin({ maxSessionDuration: maxSessionDuration }),
@@ -104,6 +171,34 @@
             writeConnectionSecretToRef:: {
               local __writeConnectionSecretToRefMixin(writeConnectionSecretToRef) = __specMixin({ writeConnectionSecretToRef+: writeConnectionSecretToRef }),
               new(name, namespace):: self + __writeConnectionSecretToRefMixin({ name: name, namespace: namespace }),
+            },
+          },
+        },
+      },
+
+      rolePolicyAttachment:: {
+        local kind = { kind: 'IAMRolePolicyAttachment' },
+        new(name, policyArnRef, roleNameRef)::
+          apiVersion + kind
+          + self.mixin.metadata.withName(name)
+          + self.mixin.spec.forProvider.withPolicyArnRef(policyArnRef)
+          + self.mixin.spec.forProvider.withRoleNameRef(roleNameRef),
+        mixin:: {
+          // Standard object metadata.
+          metadata:: {
+            local __metadataMixin(metadata) = { metadata+: metadata },
+            withName(name):: self + __metadataMixin({ name: name }),
+          },
+          spec:: {
+            local __specMixin(spec) = { spec+: spec },
+            forProvider:: {
+              local __forProviderMixin(forProvider) = __specMixin({ forProvider+: forProvider }),
+              withPolicyArnRef(name):: self + __forProviderMixin({ policyArnRef: { name: name } }),
+              withRoleNameRef(name):: self + __forProviderMixin({ roleNameRef: { name: name } }),
+            },
+            providerConfigRef:: {
+              local __providerConfigRefMixin(providerConfigRef) = __specMixin({ providerConfigRef+: providerConfigRef }),
+              new(name):: self + __providerConfigRefMixin({ name: name }),
             },
           },
         },
