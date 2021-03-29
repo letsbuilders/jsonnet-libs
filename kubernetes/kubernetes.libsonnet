@@ -88,7 +88,12 @@ local ingressSpec(ingressConfig, serviceObject) =
 local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress=false, withServiceAccountObject={}, ingressConfig={}) = {
   local dc = deploymentConfig,
   local ic = ingressConfig,
-  local containers = containerSpecs(dc.containers),
+  local mainContainer = containerSpecs([dc.container]),
+  local sidecars = containerSpecs(dc.sidecarContainers),
+  // TODO initContainers
+  //local initContainers = initContainerSpecs(dc.initContainers),
+
+  local containers = mainContainer + sidecars,
 
   local s = self,
 

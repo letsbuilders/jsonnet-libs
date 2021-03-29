@@ -1,10 +1,27 @@
 {
   _config:: {
+    local s = self,
     namespace: error '_config.namespace must be set',
     clusterDomain: error 'clusterDomain has to be set',
     deployment: {
       name: error '_config.deployment.name must be set',
-      containers: error '_config.deployment.containers must be set',
+      container: {
+        local cont = self,
+
+        name: error '_config.deployment.container.name must be set',
+        repository: error '_config.deployment.container.repository must be set',
+        tag: error '_config.deployment.container.tag must be set',
+        image: '%(repository)s:%(tag)s' % { repository: cont.repository, tag: cont.tag },
+
+        imagePullPolicy: 'IfNotPresent',
+        envVars: {
+          ENVIRONMENT: s.namespace,
+        },
+        envVarsExtra: [],
+        envFrom: [],
+      },
+      sidecarContainers: [],
+      initContainers: [],
     },
     ingress: {
       host: error '_config.ingress.host must be set',
