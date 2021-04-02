@@ -29,7 +29,7 @@ local database(databaseName, hostName, dropOnDeletion=true, name='') = {
     databaseName: databaseName,
     dropOnDeletion: dropOnDeletion,
     hostRef: {
-      name: databaseName,
+      name: hostName,
     },
   },
 };
@@ -52,7 +52,7 @@ local user(username, hostName, databaseName, priv, secretName='', name='') = {
       name: hostName,
     },
     username: username,
-    secretName: if secretName == '' then defaultName else name,
+    secretName: if secretName == '' then defaultName else secretName,
     grant: {
       databaseName: databaseName,
       priv: priv,
