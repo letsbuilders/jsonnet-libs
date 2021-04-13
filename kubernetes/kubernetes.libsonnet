@@ -61,22 +61,29 @@ local ingressSpec(ingressConfig, serviceObject) =
   local ingressClass = if std.objectHas(ingressConfig, 'class') then ingressConfig.class else 'nginx-public';
   // Set cert-managers issuer
   local certIssuer = if std.objectHas(ingressConfig, 'certIssuer') then ingressConfig.certIssuer else 'letsencrypt-prod';
-  // Set
+  // Set 'letsbuild.com/public' annotation
+  // Dictates whether should the public external-dns instance create records
   local isPublic = if std.objectHas(ingressConfig, 'isPublic') then ingressConfig.isPublic else false;
+  // Set paths
+  local paths = if std.objectHas(ingressConfig, 'paths') then ingressConfig.paths else ['/'];
 
   ingress.new(name=serviceObject.metadata.name)
-  + ingress.mixin.metadata.withAnnotations({
-    'cert-manager.io/cluster-issuer': certIssuer,
-    'kubernetes.io/ingress.class': ingressClass,
-    'letsbuild.com/public': std.toString(isPublic),
-  })
-  // TODO this can hardly be called flexible
+  + ingress.mixin.metadata.withAnnotations(
+    {
+      'cert-manager.io/cluster-issuer': certIssuer,
+      'kubernetes.io/ingress.class': ingressClass,
+      'letsbuild.com/public': std.toString(isPublic),
+    }
+    // Merge with config-specified annotations
+    + if std.objectHas(ingressConfig, 'annotations') then ingressConfig.annotations else {}
+  )
   + ingress.mixin.spec.withRules([
     {
       host: ingressConfig.host,
       http: {
         paths: [
-          { path: '/', backend: { serviceName: serviceObject.metadata.name, servicePort: serviceObject.spec.ports[0].port } },
+          { path: path, backend: { serviceName: serviceObject.metadata.name, servicePort: serviceObject.spec.ports[0].port } }
+          for path in paths
         ],
       },
     },
