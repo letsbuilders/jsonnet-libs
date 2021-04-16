@@ -1,4 +1,4 @@
-local monitorForService(name, serviceLabels, namespace, metricsPortName, metricsPath='/metrics', prometheusInstance='k8s') = {
+local serviceMonitor(name, serviceLabels, namespace, metricsPortName, metricsPath='/metrics', prometheusInstance='k8s') = {
   apiVersion: 'monitoring.coreos.com/v1',
   kind: 'ServiceMonitor',
   metadata: {
@@ -16,7 +16,7 @@ local monitorForService(name, serviceLabels, namespace, metricsPortName, metrics
       },
     ],
     selector: {
-      matchLabels: service.metadata.labels,
+      matchLabels: serviceLabels,
     },
     namespaceSelector: {
       matchNames: [
@@ -27,5 +27,5 @@ local monitorForService(name, serviceLabels, namespace, metricsPortName, metrics
 };
 
 {
-  monitorForService:: monitorForService,
+  serviceMonitor:: serviceMonitor,
 }
