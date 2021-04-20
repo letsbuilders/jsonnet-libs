@@ -97,8 +97,7 @@ local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress
   local ic = ingressConfig,
   local mainContainer = containerSpecs([dc.container]),
   local sidecars = containerSpecs(dc.sidecarContainers),
-  // TODO initContainers
-  //local initContainers = initContainerSpecs(dc.initContainers),
+  local initContainers = if std.objectHas(dc, 'initContainers') then containerSpecs(dc.initContainers) else [],
 
   local containers = mainContainer + sidecars,
 
@@ -111,6 +110,7 @@ local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress
     deployment.new(dc.name, replicas=1, containers=containers)
     // Hide replicas to avoid conflicts with HPA
     + (if std.objectHas(dc, 'autoscaling') then { spec+: { replicas:: null } } else {})
+    + deployment.mixin.spec.template.spec.withInitContainers(initContainers)
     + (
       if std.length(withServiceAccountObject) > 0
       then
@@ -138,7 +138,29 @@ local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress
   ingress: if withIngress then ingressSpec(ic, s.service),
 };
 
+local letsbuildJob(config, withServiceAccountObject={}) = {
+  local job = k.batch.v1.job,
+
+  local containers = containerSpecs([config.container]),
+
+  job:
+    job.new()
+    + job.mixin.metadata.withName(config.name)
+    + job.mixin.spec.withBackoffLimit(0)
+    + job.mixin.spec.template.spec.withRestartPolicy('Never')
+    + job.mixin.spec.template.spec.withContainers(containers)
+    + (
+      if std.length(withServiceAccountObject) > 0
+      then
+        job.mixin.spec.template.spec.withServiceAccountName(withServiceAccountObject.metadata.name)
+        + job.mixin.spec.template.spec.withAutomountServiceAccountToken(true)
+      else
+        {}
+      )
+};
+
 {
   // Expose library methods
   letsbuildServiceDeployment:: letsbuildServiceDeployment,
+  letsbuildJob:: letsbuildJob,
 }
