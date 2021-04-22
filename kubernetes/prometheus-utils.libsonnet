@@ -29,7 +29,7 @@ local serviceMonitor(name, serviceLabels, namespace, metricsPortName, metricsPat
 
 local podMonitor(name, podLabels, namespace, metricsPortName, metricsPath='/metrics', prometheusInstance='k8s') = {
   apiVersion: 'monitoring.coreos.com/v1',
-  kind: 'ServiceMonitor',
+  kind: 'PodMonitor',
   metadata: {
     name: name,
     labels: {
