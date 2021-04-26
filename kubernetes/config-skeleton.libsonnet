@@ -23,6 +23,26 @@
       sidecarContainers: [],
       initContainers: [],
     },
+    job: {
+      name: error '_config.job.name must be set',
+      container: {
+        local cont = self,
+
+        name: error '_config.job.container.name must be set',
+
+        repository: error '_config.job.container.repository must be set',
+        tag: error '_config.job.container.tag must be set',
+        image: '%(repository)s:%(tag)s' % { repository: cont.repository, tag: cont.tag },
+
+        imagePullPolicy: 'IfNotPresent',
+
+        envVars: {
+          ENVIRONMENT: s.namespace,
+        },
+        envVarsExtra: [],
+        envFrom: [],
+      },
+    },
     ingress: {
       host: error '_config.ingress.host must be set',
     },
