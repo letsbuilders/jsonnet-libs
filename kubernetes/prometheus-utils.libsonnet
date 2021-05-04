@@ -54,7 +54,6 @@ local podMonitor(name, podLabels, namespace, metricsPortName, metricsPath='/metr
       },
     ],
   },
-
 };
 
 {
