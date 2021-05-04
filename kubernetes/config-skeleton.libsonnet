@@ -17,7 +17,10 @@
         envVars: {
           ENVIRONMENT: s.namespace,
         },
-        envVarsExtra: [],
+        envVarsExtra: [{
+          name: 'HOST_IP',
+          valueFrom: { fieldRef: { fieldPath: 'status.hostIP' } },
+        }],
         envFrom: [],
       },
       sidecarContainers: [],

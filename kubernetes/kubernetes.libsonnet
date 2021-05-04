@@ -110,6 +110,20 @@ local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress
     deployment.new(dc.name, replicas=1, containers=containers)
     // Hide replicas to avoid conflicts with HPA
     + (if std.objectHas(dc, 'autoscaling') then { spec+: { replicas:: null } } else {})
+    + deployment.mixin.spec.template.metadata.withAnnotations({
+      'sidecar.istio.io/proxyCPU': '128m',
+      //      'sidecar.istio.io/proxyCPULimit': '',
+      'sidecar.istio.io/proxyMemory': '128Mi',
+      //      'sidecar.istio.io/proxyMemoryLimit': '',
+      'proxy.istio.io/config': std.toString({
+        tracing: {
+          openCensusAgent: {
+            address: '$(HOST_IP):55678',
+            context: ['W3C_TRACE_CONTEXT'],
+          },
+        },
+      }),
+    })
     + deployment.mixin.spec.template.spec.withInitContainers(initContainers)
     + (
       if std.length(withServiceAccountObject) > 0
@@ -156,7 +170,7 @@ local letsbuildJob(config, withServiceAccountObject={}) = {
         + job.mixin.spec.template.spec.withAutomountServiceAccountToken(true)
       else
         {}
-      )
+    ),
 };
 
 {
