@@ -111,9 +111,9 @@ local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress
     // Hide replicas to avoid conflicts with HPA
     + (if std.objectHas(dc, 'autoscaling') then { spec+: { replicas:: null } } else {})
     + deployment.mixin.spec.template.metadata.withAnnotations({
-      'sidecar.istio.io/proxyCPU': '128m',
+      'sidecar.istio.io/proxyCPU': '48m',
       //      'sidecar.istio.io/proxyCPULimit': '',
-      'sidecar.istio.io/proxyMemory': '128Mi',
+      'sidecar.istio.io/proxyMemory': '64Mi',
       //      'sidecar.istio.io/proxyMemoryLimit': '',
     })
     + deployment.mixin.spec.template.spec.withInitContainers(initContainers)
