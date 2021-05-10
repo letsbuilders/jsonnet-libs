@@ -30,8 +30,10 @@ local containerSpecs(containersConfig) = [
       [port.new(cont.name, cont.port)]
     else if std.objectHas(cont, 'ports')
     then
-      // TODO implement support for multiple ports
-      std.trace('WARNING: multiple ports are not yet supported', [])
+      [
+        port.new(contPort.name, contPort.port)
+        for contPort in cont.ports
+      ]
     else
       []
   )
