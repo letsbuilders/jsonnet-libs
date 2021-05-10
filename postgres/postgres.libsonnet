@@ -24,6 +24,9 @@ local database(databaseName, hostName, dropOnDeletion=true, name='') = {
   kind: 'Database',
   metadata: {
     name: if name == '' then defaultName else name,
+    annotations: {
+      'argocd.argoproj.io/hook': 'PreSync'
+    },
   },
   spec: {
     databaseName: databaseName,
@@ -46,6 +49,9 @@ local user(username, hostName, databaseName, priv, secretName='', name='') = {
   kind: 'User',
   metadata: {
     name: if name == '' then defaultName else name,
+    annotations: {
+      'argocd.argoproj.io/hook': 'PreSync'
+    },
   },
   spec: {
     hostRef: {
