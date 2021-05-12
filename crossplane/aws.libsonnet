@@ -6,7 +6,7 @@
       local apiVersion = { apiVersion: 's3.aws.crossplane.io/v1beta1' },
       bucket:: {
         local kind = { kind: 'Bucket' },
-        new(name):: apiVersion + kind + self.mixin.metadata.withName(name),
+        new(name):: apiVersion + kind + self.mixin.metadata.withName(name) + self.mixin.spec.withDeletionPolicy('Orphan'),
         mixin:: {
           // Standard object metadata.
           metadata:: {
@@ -16,6 +16,7 @@
           spec:: {
             local __specMixin(spec) = { spec+: spec },
             mixinInstance(spec):: __specMixin(spec),
+            withDeletionPolicy(deletionPolicy):: self + __specMixin({ deletionPolicy: deletionPolicy }),
             forProvider:: {
               local __forProviderMixin(forProvider) = __specMixin({ forProvider+: forProvider }),
               mixinInstance(forProvider):: __forProviderMixin(forProvider),
