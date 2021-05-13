@@ -117,6 +117,7 @@ local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress
       //      'sidecar.istio.io/proxyCPULimit': '',
       'sidecar.istio.io/proxyMemory': '64Mi',
       //      'sidecar.istio.io/proxyMemoryLimit': '',
+      'argocd.argoproj.io/sync-wave': '1',
     })
     + deployment.mixin.spec.template.spec.withInitContainers(initContainers)
     + (
