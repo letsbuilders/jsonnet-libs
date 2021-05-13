@@ -25,7 +25,8 @@ local database(databaseName, hostName, dropOnDeletion=true, name='') = {
   metadata: {
     name: if name == '' then defaultName else name,
     annotations: {
-      'argocd.argoproj.io/hook': 'PreSync'
+      'argocd.argoproj.io/hook': 'PreSync',
+      'argocd.argoproj.io/sync-wave': '-2',
     },
   },
   spec: {
@@ -50,7 +51,8 @@ local user(username, hostName, databaseName, priv, secretName='', name='') = {
   metadata: {
     name: if name == '' then defaultName else name,
     annotations: {
-      'argocd.argoproj.io/hook': 'PreSync'
+      'argocd.argoproj.io/hook': 'PreSync',
+      'argocd.argoproj.io/sync-wave': '-1',
     },
   },
   spec: {
