@@ -53,6 +53,23 @@ local containerSpecs(containersConfig) = [
     else
       {}
   )
+  // https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  + (
+    if std.objectHas(cont, 'readinessProbe')
+    then
+    {
+      readinessProbe: cont.readinessProbe
+    }
+    else {}
+  )
+  + (
+      if std.objectHas(cont, 'livenessProbe')
+      then
+      {
+        livenessProbe: cont.livenessProbe
+      }
+      else {}
+    )
   for cont in containersConfig
 ];
 
