@@ -177,6 +177,7 @@ local letsbuildJob(config, withServiceAccountObject={}) = {
       'sidecar.istio.io/inject': 'false'
     })
     + job.mixin.spec.withBackoffLimit(0)
+    + job.mixin.spec.withTtlSecondsAfterFinished(180)
     + job.mixin.spec.template.spec.withRestartPolicy('Never')
     + job.mixin.spec.template.spec.withContainers(containers)
     + (
