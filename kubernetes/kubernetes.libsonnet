@@ -83,7 +83,6 @@ local ingressSpec(ingressConfig, serviceObject) =
   ingress.new(name=serviceObject.metadata.name)
   + ingress.mixin.metadata.withAnnotations(
     {
-      'cert-manager.io/cluster-issuer': certIssuer,
       'kubernetes.io/ingress.class': ingressClass,
       'letsbuild.com/public': std.toString(isPublic),
     }
@@ -102,7 +101,7 @@ local ingressSpec(ingressConfig, serviceObject) =
     },
   ])
   + ingress.mixin.spec.withTls([
-    { hosts: [ingressConfig.host], secretName: '%s-ingress-tls' % serviceObject.metadata.name },
+    { hosts: [ingressConfig.host], secretName: 'base-certificate' },
   ]);
 
 local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress=false, withServiceAccountObject={}, ingressConfig={}) = {
