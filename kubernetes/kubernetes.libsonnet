@@ -56,20 +56,14 @@ local containerSpecs(containersConfig) = [
   // https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
   + (
     if std.objectHas(cont, 'readinessProbe')
-    then
-    {
-      readinessProbe: cont.readinessProbe
-    }
+    then { readinessProbe: cont.readinessProbe }
     else {}
   )
   + (
-      if std.objectHas(cont, 'livenessProbe')
-      then
-      {
-        livenessProbe: cont.livenessProbe
-      }
-      else {}
-    )
+    if std.objectHas(cont, 'livenessProbe')
+    then { livenessProbe: cont.livenessProbe }
+    else {}
+  )
   for cont in containersConfig
 ];
 
@@ -174,7 +168,7 @@ local letsbuildJob(config, withServiceAccountObject={}) = {
     + job.mixin.metadata.withName(config.name)
     // Disable Istio sidecar to avoid never-ending Jobs
     + job.mixin.spec.template.metadata.withAnnotations({
-      'sidecar.istio.io/inject': 'false'
+      'sidecar.istio.io/inject': 'false',
     })
     + job.mixin.spec.withBackoffLimit(0)
     + job.mixin.spec.withTtlSecondsAfterFinished(180)
