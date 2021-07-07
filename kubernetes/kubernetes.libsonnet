@@ -131,6 +131,10 @@ local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress
       'argocd.argoproj.io/sync-wave': '1',
     })
     + deployment.mixin.spec.template.spec.withInitContainers(initContainers)
+    // Setting revisionHistoryLimit to clean up unused ReplicaSets
+    + deployment.mixin.spec.withRevisionHistoryLimit(
+      if std.objectHas(dc, 'revisionHistoryLimit') then dc.revisionHistoryLimit else 3
+    )
     + (
       if std.length(withServiceAccountObject) > 0
       then
