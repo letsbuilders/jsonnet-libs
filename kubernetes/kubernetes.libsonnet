@@ -49,7 +49,7 @@ local containerSpecs(containersConfig) = [
   + (
     if std.objectHas(cont, 'resourcesLimits')
     then
-      util.resourcesRequests(cont.resourcesLimits.cpu, cont.resourcesLimits.mem)
+      util.resourcesLimits(cont.resourcesLimits.cpu, cont.resourcesLimits.mem)
     else
       {}
   )
