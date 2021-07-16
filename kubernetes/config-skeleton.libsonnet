@@ -58,7 +58,16 @@
         envVars: {
           ENVIRONMENT: s.namespace,
         },
-        extraEnvVars: [],
+        extraEnvVars: [
+          {
+            name: 'HOST_IP',
+            valueFrom: { fieldRef: { fieldPath: 'status.hostIP' } },
+          },
+          {
+            name: 'POD_IP',
+            valueFrom: { fieldRef: { fieldPath: 'status.podIP' } },
+          },
+        ],
         envFrom: [],
       },
     },
