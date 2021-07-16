@@ -1,19 +1,25 @@
 {
   _config:: {
     local s = self,
+
     namespace: error '_config.namespace must be set',
     clusterDomain: error 'clusterDomain has to be set',
+
     deployment: {
+      local depl = self,
+
       name: error '_config.deployment.name must be set',
+
       container: {
         local cont = self,
 
-        name: error '_config.deployment.container.name must be set',
+        name: depl.name,
         repository: error '_config.deployment.container.repository must be set',
         tag: error '_config.deployment.container.tag must be set',
         image: '%(repository)s:%(tag)s' % { repository: cont.repository, tag: cont.tag },
 
         imagePullPolicy: 'IfNotPresent',
+
         envVars: {
           ENVIRONMENT: s.namespace,
         },
@@ -23,15 +29,19 @@
         }],
         envFrom: [],
       },
+
       sidecarContainers: [],
       initContainers: [],
     },
     job: {
+      local job = self,
+
       name: error '_config.job.name must be set',
+
       container: {
         local cont = self,
 
-        name: error '_config.job.container.name must be set',
+        name: job.name,
 
         repository: error '_config.job.container.repository must be set',
         tag: error '_config.job.container.tag must be set',
