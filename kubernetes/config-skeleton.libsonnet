@@ -71,6 +71,28 @@
         envFrom: [],
       },
     },
+    statefulSet: {
+      local sts = self,
+
+      name: error '_config.statefulSet.name must be set',
+      container: {
+        name: sts.name,
+        envVars: {
+          ENVIRONMENT: s.namespace,
+        },
+        extraEnvVars: [
+          {
+            name: 'HOST_IP',
+            valueFrom: { fieldRef: { fieldPath: 'status.hostIP' } },
+          },
+          {
+            name: 'POD_IP',
+            valueFrom: { fieldRef: { fieldPath: 'status.podIP' } },
+          },
+        ],
+        envFrom: [],
+      },
+    },
     ingress: {
       host: error '_config.ingress.host must be set',
     },
