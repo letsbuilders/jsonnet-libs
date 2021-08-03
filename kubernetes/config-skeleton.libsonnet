@@ -32,6 +32,10 @@
             name: 'POD_IP',
             valueFrom: { fieldRef: { fieldPath: 'status.podIP' } },
           },
+          {
+            name: 'CONTAINER_NAME',
+            value: cont.name,
+          },
         ],
         envFrom: [],
       },
@@ -67,6 +71,10 @@
             name: 'POD_IP',
             valueFrom: { fieldRef: { fieldPath: 'status.podIP' } },
           },
+          {
+            name: 'CONTAINER_NAME',
+            value: cont.name,
+          },
         ],
         envFrom: [],
       },
@@ -88,6 +96,10 @@
           {
             name: 'POD_IP',
             valueFrom: { fieldRef: { fieldPath: 'status.podIP' } },
+          },
+          {
+            name: 'CONTAINER_NAME',
+            value: cont.name,
           },
         ],
         envFrom: [],
