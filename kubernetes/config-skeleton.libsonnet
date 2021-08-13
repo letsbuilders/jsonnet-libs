@@ -84,6 +84,8 @@
 
       name: error '_config.statefulSet.name must be set',
       container: {
+        local cont = self,
+
         name: sts.name,
         envVars: {
           ENVIRONMENT: s.namespace,
