@@ -161,6 +161,53 @@ local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress
   ingress: if withIngress then ingressSpec(ic, s.service),
 };
 
+local letsbuildServiceStatefulSet(statefulsetConfig, withService=true) = {
+  local sts = statefulsetConfig,
+  local mainContainer = containerSpecs([sts.container]),
+  local sidecars = containerSpecs(sts.sidecarContainers),
+  local initContainers = if std.objectHas(sts, 'initContainers') then containerSpecs(sts.initContainers) else [],
+
+  local containers = mainContainer + sidecars,
+
+  local s = self,
+
+  local hpa = k.autoscaling.v1.horizontalPodAutoscaler,
+  local statefulSet = k.apps.v1.statefulSet,
+
+  statefulSet:
+    statefulSet.new(sts.name, replicas=1, containers=containers)
+    // Hide replicas to avoid conflicts with HPA
+    + (if std.objectHas(sts, 'autoscaling') then { spec+: { replicas:: null } } else {})
+    + statefulSet.mixin.spec.template.metadata.withAnnotations({
+      'sidecar.istio.io/proxyCPU': '48m',
+      //      'sidecar.istio.io/proxyCPULimit': '',
+      'sidecar.istio.io/proxyMemory': '64Mi',
+      //      'sidecar.istio.io/proxyMemoryLimit': '',
+      'argocd.argoproj.io/sync-wave': '1',
+    })
+    + statefulSet.mixin.spec.template.spec.withInitContainers(initContainers)
+    // Setting revisionHistoryLimit to clean up unused ReplicaSets
+    + statefulSet.mixin.spec.withRevisionHistoryLimit(
+      if std.objectHas(sts, 'revisionHistoryLimit') then sts.revisionHistoryLimit else 3
+    )
+    + statefulSet.mixin.spec.withServiceName(sts.name),
+
+  service: if withService then util.serviceFor(s.statefulSet) else {},
+
+  hpa: (
+    if std.objectHas(sts, 'autoscaling')
+    then
+      hpa.new()
+      + hpa.mixin.metadata.withName(sts.name)
+      + hpa.mixin.spec.scaleTargetRef.withKind(s.statefulSet.kind)
+      + hpa.mixin.spec.scaleTargetRef.withName(s.statefulSet.metadata.name)
+      // Override because this parameter is missing from the library
+      + { spec+: { scaleTargetRef+: { apiVersion: s.statefulSet.apiVersion } } }
+      + hpa.mixin.spec.withMaxReplicas(sts.autoscaling.maxReplicas)
+      + hpa.mixin.spec.withMinReplicas(sts.autoscaling.minReplicas)
+  ),
+};
+
 local letsbuildJob(config, withServiceAccountObject={}) = {
   local job = k.batch.v1.job,
 
@@ -190,5 +237,6 @@ local letsbuildJob(config, withServiceAccountObject={}) = {
 {
   // Expose library methods
   letsbuildServiceDeployment:: letsbuildServiceDeployment,
+  letsbuildServiceStatefulSet:: letsbuildServiceStatefulSet,
   letsbuildJob:: letsbuildJob,
 }
