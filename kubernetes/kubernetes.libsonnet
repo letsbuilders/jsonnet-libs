@@ -143,7 +143,7 @@ local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress
     ),
 
   // We must generate a service if an ingress was requested
-  service: if withService || withIngress then util.serviceFor(s.deployment) else {},
+  service: if withService || withIngress then util.serviceFor(s.deployment, nameFormat='%(port)s') else {},
 
   hpa: (
     if std.objectHas(dc, 'autoscaling')
@@ -192,7 +192,7 @@ local letsbuildServiceStatefulSet(statefulsetConfig, withService=true) = {
     )
     + statefulSet.mixin.spec.withServiceName(sts.name),
 
-  service: if withService then util.serviceFor(s.statefulSet) else {},
+  service: if withService then util.serviceFor(s.statefulSet, nameFormat='%(port)s') else {},
 
   hpa: (
     if std.objectHas(sts, 'autoscaling')
