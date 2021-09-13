@@ -31,7 +31,7 @@ local database(databaseName, hostName, dropOnDeletion=true, name='', extensions=
   spec: {
     databaseName: databaseName,
     dropOnDeletion: dropOnDeletion,
-    [if extensions then 'extensions']: extensions,
+    [if extensions != [] then 'extensions']: extensions,
     hostRef: {
       name: hostName,
     },
