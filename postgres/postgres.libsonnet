@@ -14,7 +14,7 @@ local host(name, username, address, secretName, secretKey, username) = {
   },
 };
 
-local database(databaseName, hostName, dropOnDeletion=true, name='') = {
+local database(databaseName, hostName, dropOnDeletion=true, name='', extensions=[]) = {
   local defaultName = '%(host)s-%(database)s' % {
     host: hostName,
     database: databaseName,
@@ -31,6 +31,7 @@ local database(databaseName, hostName, dropOnDeletion=true, name='') = {
   spec: {
     databaseName: databaseName,
     dropOnDeletion: dropOnDeletion,
+    [if extensions then 'extensions']: extensions,
     hostRef: {
       name: hostName,
     },
