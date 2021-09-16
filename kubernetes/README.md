@@ -3,7 +3,10 @@
 The below example will create an autoscaled `Deployment` with 2 containers, a `Service` and an `Ingress`
 
 ```jsonnet
-(import 'github.com/letsbuilders/jsonnet-libs/kubernetes/kubernetes.libsonnet') +
+
+local lbKubernetes = (import 'github.com/letsbuilders/jsonnet-libs/kubernetes/kubernetes.libsonnet');
+local lbInitContainers = (import 'github.com/letsbuilders/jsonnet-libs/kubernetes/init-containers.libsonnet');
+
 (import 'github.com/letsbuilders/jsonnet-libs/kubernetes/config-skeleton.libsonnet') +
 { 
   _config+: {
@@ -15,6 +18,10 @@ The below example will create an autoscaled `Deployment` with 2 containers, a `S
         minReplicas: 1,
         maxReplicas: 3,
       },
+      
+      initContainers: [
+        lbInitContainers.waitForPostgres('example-service-postgres'),
+      ],
 
       containers: [
         { 
@@ -44,7 +51,7 @@ The below example will create an autoscaled `Deployment` with 2 containers, a `S
 
   // Application deployment
   webServiceDeployment:
-    $.letsbuildServiceDeployment(
+    lbKubernetes.letsbuildServiceDeployment(
       deploymentConfig=c.deployment,
       withService=true,
       withIngress=true,
