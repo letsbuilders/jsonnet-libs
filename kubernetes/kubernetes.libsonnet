@@ -212,6 +212,7 @@ local letsbuildJob(config, withServiceAccountObject={}) = {
   local job = k.batch.v1.job,
 
   local containers = containerSpecs([config.container]),
+  local initContainers = if std.objectHas(config, 'initContainers') then containerSpecs(config.initContainers) else [],
 
   job:
     job.new()
@@ -224,6 +225,7 @@ local letsbuildJob(config, withServiceAccountObject={}) = {
     + job.mixin.spec.withTtlSecondsAfterFinished(180)
     + job.mixin.spec.template.spec.withRestartPolicy('Never')
     + job.mixin.spec.template.spec.withContainers(containers)
+    + job.mixin.spec.template.spec.withInitContainers(initContainers)
     + (
       if std.length(withServiceAccountObject) > 0
       then
