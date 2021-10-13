@@ -101,6 +101,40 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
     ]
   },
 
+  readOnlyBucketPolicyDocument:: {
+    version: '2012-10-17',
+    statements: [
+      {
+        sid: 'DownloadandUpload',
+        action: ['s3:GetObject', 's3:GetObjectVersion'],
+        effect: 'Allow',
+        resource: ['arn:aws:s3:::%s/*' % s.bucketName],
+        principal: {
+          awsPrincipals: [
+            {
+              // If I use iamRoleArnRef here tanka wants to remove iamRoleArn because it gets added by crossplane
+              // https://github.com/crossplane/provider-aws/issues/555
+              iamRoleArn: 'arn:aws:iam::%(accountId)s:role/%(roleName)s' % { accountId: c.aws.accountId, roleName: s.roleName },
+            },
+          ],
+        },
+      },
+      {
+        sid: 'List',
+        action: ['s3:ListBucket'],
+        effect: 'Allow',
+        resource: ['arn:aws:s3:::%s' % s.bucketName],
+        principal: {
+          awsPrincipals: [
+            {
+              iamRoleArn: 'arn:aws:iam::%(accountId)s:role/%(roleName)s' % { accountId: c.aws.accountId, roleName: s.roleName },
+            },
+          ],
+        },
+      },
+    ]
+  },
+
 
   overrides:: {
     // service_account field overrides
@@ -119,6 +153,10 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
 
   // Resources
 
+  readOnlyBucketPolicyResource::
+    bucketPolicy.new(name=s.bucketName, bucketName=s.bucketName, region=c.aws.region, policy=s.readOnlyBucketPolicyDocument)
+    + bucketPolicy.mixin.spec.providerConfigRef.new(c.crossplaneProvider),
+    
   bucket:: {
     bucket:
       bucket.new(name=s.bucketName)
