@@ -141,7 +141,7 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
   // Resources
 
   readOnlyBucketPolicyResource::
-    bucketPolicy.new(name=s.bucketName, bucketName=s.bucketName, region=c.aws.region, policy=s.readOnlyBucketPolicyDocument)
+    bucketPolicy.new(name=c.serviceName, bucketName=s.bucketName, region=c.aws.region, policy=s.readOnlyBucketPolicyDocument)
     + bucketPolicy.mixin.spec.providerConfigRef.new(c.crossplaneProvider),
     
   bucket:: {
