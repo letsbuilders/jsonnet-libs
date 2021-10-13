@@ -36,6 +36,8 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
     accountName: c.aws.accountName,
     region: c.aws.region,
   },
+  
+  readOnlyBucketPolicyName:: '%(serviceName)-readonly-%s' % s.bucketName,
 
   roleName:: '%(clusterName)s-%(namespace)s-%(serviceName)s' % {
     serviceName: c.serviceName,
@@ -141,7 +143,7 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
   // Resources
 
   readOnlyBucketPolicyResource::
-    bucketPolicy.new(name=c.serviceName, bucketName=s.bucketName, region=c.aws.region, policy=s.readOnlyBucketPolicyDocument)
+    bucketPolicy.new(name=s.readOnlyBucketPolicyName, bucketName=s.bucketName, region=c.aws.region, policy=s.readOnlyBucketPolicyDocument)
     + bucketPolicy.mixin.spec.providerConfigRef.new(c.crossplaneProvider),
     
   bucket:: {
