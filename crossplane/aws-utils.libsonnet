@@ -37,7 +37,10 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
     region: c.aws.region,
   },
   
-  readOnlyBucketPolicyName:: '%(serviceName)-readonly-%s' % s.bucketName,
+  readOnlyBucketPolicyName:: '%(serviceName)-readonly-%(bucketName' % {
+    serviceName: c.serviceName,
+    bucketName: s.bucketName,
+  },
 
   roleName:: '%(clusterName)s-%(namespace)s-%(serviceName)s' % {
     serviceName: c.serviceName,
