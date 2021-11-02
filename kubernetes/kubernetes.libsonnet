@@ -134,6 +134,11 @@ local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress
     + deployment.mixin.spec.withRevisionHistoryLimit(
       if std.objectHas(dc, 'revisionHistoryLimit') then dc.revisionHistoryLimit else 3
     )
+    + deployment.mixin.spec.template.spec.withNodeSelector({
+      'kubernetes.io/os': 'linux',
+      'letsbuild.com/purpose': 'worker',
+      'kubernetes.io/arch': 'amd64',
+    })
     + (
       if std.length(withServiceAccountObject) > 0
       then
@@ -185,6 +190,11 @@ local letsbuildServiceStatefulSet(statefulsetConfig, withService=true) = {
       //      'sidecar.istio.io/proxyMemoryLimit': '',
       'argocd.argoproj.io/sync-wave': '1',
     })
+    + statefulSet.mixin.spec.template.spec.withNodeSelector({
+      'kubernetes.io/os': 'linux',
+      'letsbuild.com/purpose': 'worker',
+      'kubernetes.io/arch': 'amd64',
+    })
     + statefulSet.mixin.spec.template.spec.withInitContainers(initContainers)
     // Setting revisionHistoryLimit to clean up unused ReplicaSets
     + statefulSet.mixin.spec.withRevisionHistoryLimit(
@@ -220,6 +230,11 @@ local letsbuildJob(config, withServiceAccountObject={}) = {
     // Disable Istio sidecar to avoid never-ending Jobs
     + job.mixin.spec.template.metadata.withAnnotations({
       'sidecar.istio.io/inject': 'false',
+    })
+    + statefulSet.mixin.spec.template.spec.withNodeSelector({
+      'kubernetes.io/os': 'linux',
+      'letsbuild.com/purpose': 'worker',
+      'kubernetes.io/arch': 'amd64',
     })
     + job.mixin.spec.withBackoffLimit(0)
     + job.mixin.spec.withTtlSecondsAfterFinished(180)
