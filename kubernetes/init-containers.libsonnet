@@ -9,8 +9,8 @@ local waitForPostgres = function(secretName, timeout='300000') {
   name: 'wait-for-postgres',
   image: waitForPortImage,
   command: ['/usr/local/bin/wait-port', '--wait-for-dns', '-t', '3000', '$(PGHOST):$(PGPORT)'],
-   // PGHOST and PGPORT are stored in the secret
-  envFrom+: [ { secretRef: { name: secretName } } ]
+  // PGHOST and PGPORT are stored in the secret
+  envFrom+: [{ secretRef: { name: secretName } }],
 };
 
 local waitForKafka = function(timeout='300000') {
@@ -20,7 +20,7 @@ local waitForKafka = function(timeout='300000') {
   envVars: {
     // Kafka connection endpoint is the same for all environments
     KAFKA_SERVERS: 'kafka-kafka-brokers:9092',
-  }
+  },
 };
 
 local waitForSchemaRegistry = function(timeout='300000') {
@@ -30,7 +30,7 @@ local waitForSchemaRegistry = function(timeout='300000') {
   envVars: {
     // Schema Registry URL is the same for all environments
     KAFKA_SCHEMA_REGISTRY_URL: 'http://confluentic-cp-schema-registry:8081',
-  }
+  },
 };
 
 local waitForPort = function(timeout='300000', target) {

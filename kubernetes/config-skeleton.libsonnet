@@ -89,11 +89,11 @@
         local cont = self,
 
         name: sts.name,
-      
+
         repository: error '_config.statefulSet.container.repository must be set',
         tag: error '_config.statefulSet.container.tag must be set',
         image: '%(repository)s:%(tag)s' % { repository: cont.repository, tag: cont.tag },
-        
+
         envVars: {
           ENVIRONMENT: s.namespace,
         },
