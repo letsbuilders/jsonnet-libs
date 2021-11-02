@@ -250,7 +250,7 @@ local letsbuildJob(config, withServiceAccountObject={}) = {
     + job.mixin.spec.template.metadata.withAnnotations({
       'sidecar.istio.io/inject': 'false',
     })
-    + statefulSet.mixin.spec.template.spec.withNodeSelector({
+    + job.mixin.spec.template.spec.withNodeSelector({
       'kubernetes.io/os': 'linux',
       'letsbuild.com/purpose': 'worker',
       'kubernetes.io/arch': 'amd64',
