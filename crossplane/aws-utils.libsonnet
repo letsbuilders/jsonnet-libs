@@ -36,12 +36,6 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
     accountName: c.aws.accountName,
     region: c.aws.region,
   },
-  
-  readOnlyBucketPolicyName:: '%(serviceName)s-readonly-%(bucketName)s' % {
-    serviceName: c.serviceName,
-    bucketName: s.bucketName,
-  },
-
   roleName:: '%(clusterName)s-%(namespace)s-%(serviceName)s' % {
     serviceName: c.serviceName,
     namespace: c.serviceNamespace,
@@ -106,28 +100,6 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
     ]
   },
 
-  readOnlyBucketPolicyDocument:: {
-    version: '2012-10-17',
-    statements: [
-      {
-        sid: 'DownloadOnly',
-        action: ['s3:GetObject', 's3:GetObjectVersion'],
-        effect: 'Allow',
-        resource: ['arn:aws:s3:::%s/*' % s.bucketName],
-        principal: {
-          awsPrincipals: [
-            {
-              // If I use iamRoleArnRef here tanka wants to remove iamRoleArn because it gets added by crossplane
-              // https://github.com/crossplane/provider-aws/issues/555
-              iamRoleArn: 'arn:aws:iam::%(accountId)s:role/%(roleName)s' % { accountId: c.aws.accountId, roleName: s.roleName },
-            },
-          ],
-        },
-      },
-    ]
-  },
-
-
   overrides:: {
     // service_account field overrides
     // service_account will be defined by https://github.com/grafana/jsonnet-libs/blob/master/ksonnet-util/util.libsonnet#L49
@@ -145,10 +117,6 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
 
   // Resources
 
-  readOnlyBucketPolicyResource::
-    bucketPolicy.new(name=s.readOnlyBucketPolicyName, bucketName=s.bucketName, region=c.aws.region, policy=s.readOnlyBucketPolicyDocument)
-    + bucketPolicy.mixin.spec.providerConfigRef.new(c.crossplaneProvider),
-    
   bucket:: {
     bucket:
       bucket.new(name=s.bucketName)
