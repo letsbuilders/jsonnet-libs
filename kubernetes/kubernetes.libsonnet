@@ -129,6 +129,25 @@ local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress
       //      'sidecar.istio.io/proxyMemoryLimit': '',
       'argocd.argoproj.io/sync-wave': '1',
     })
+    + deployment.mixin.spec.template.metadata.withLabels({
+      name: dc.name,
+      app: dc.name,
+      version: dc.container.tag,
+
+    })
+    + deployment.mixin.spec.template.spec.withTopologySpreadConstraints([
+      {
+        maxSkew: 1,
+        topologyKey: 'topology.kubernetes.io/zone',
+        whenUnsatisfiable: 'ScheduleAnyway',
+        labelSelector: {
+          matchLabels: {
+            app: dc.name,
+            version: dc.container.tag,
+          },
+        },
+      },
+    ])
     + deployment.mixin.spec.template.spec.withInitContainers(initContainers)
     // Setting revisionHistoryLimit to clean up unused ReplicaSets
     + deployment.mixin.spec.withRevisionHistoryLimit(
