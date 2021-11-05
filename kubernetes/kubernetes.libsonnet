@@ -172,8 +172,7 @@ local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress
   hpa: (
     if std.objectHas(dc, 'autoscaling')
     then
-      hpa.new()
-      + hpa.mixin.metadata.withName(dc.name)
+      hpa.new(dc.name)
       + hpa.mixin.spec.scaleTargetRef.withKind(s.deployment.kind)
       + hpa.mixin.spec.scaleTargetRef.withName(s.deployment.metadata.name)
       // Override because this parameter is missing from the library
@@ -226,8 +225,7 @@ local letsbuildServiceStatefulSet(statefulsetConfig, withService=true) = {
   hpa: (
     if std.objectHas(sts, 'autoscaling')
     then
-      hpa.new()
-      + hpa.mixin.metadata.withName(sts.name)
+      hpa.new(sts.name)
       + hpa.mixin.spec.scaleTargetRef.withKind(s.statefulSet.kind)
       + hpa.mixin.spec.scaleTargetRef.withName(s.statefulSet.metadata.name)
       // Override because this parameter is missing from the library
