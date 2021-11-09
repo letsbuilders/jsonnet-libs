@@ -167,7 +167,19 @@ local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress
     ),
 
   // We must generate a service if an ingress was requested
-  service: if withService || withIngress then util.serviceFor(s.deployment, nameFormat='%(port)s') else {},
+  service:
+    if withService || withIngress
+    then util.serviceFor(s.deployment, nameFormat='%(port)s') + {
+      spec+: {
+        selector+: {
+          // We don't want to use the version label in service selectors
+          // Services should select all versions of an app
+          // Otherwise rolling updates won't be possible
+          version:: null,
+        },
+      },
+    }
+    else {},
 
   hpa: (
     if std.objectHas(dc, 'autoscaling')
