@@ -67,6 +67,33 @@ local containerSpecs(containersConfig) = [
   for cont in containersConfig
 ];
 
+local publicApiIngressSpec(publicApiConfig) =
+  local ingress = k.extensions.v1beta1.ingress;
+
+  ingress.new(name=publicApiConfig.name)
+  + ingress.mixin.metadata.withAnnotations(
+    {
+      'kubernetes.io/ingress.class': 'nginx-public',
+    }
+    // Merge with config-specified annotations
+    + if std.objectHas(publicApiConfig, 'annotations') then publicApiConfig.annotations else {}
+  )
+  + ingress.mixin.spec.withRules([
+    {
+      host: publicApiConfig.host,
+      http: {
+        paths: [
+          {
+            path: '/%(name)s%(path)s' % { name: publicApiConfig.name, path: path },
+            pathType: 'Prefix',
+            backend: { serviceName: 'gateway', servicePort: 80 },
+          }
+          for path in publicApiConfig.paths
+        ],
+      },
+    },
+  ]);
+
 local ingressSpec(ingressConfig, serviceObject) =
   local ingress = k.extensions.v1beta1.ingress;
   // TODO After we decide on which Ingress Contoller we'll be using some logic may be simplified
@@ -104,7 +131,7 @@ local ingressSpec(ingressConfig, serviceObject) =
     { hosts: [ingressConfig.host], secretName: 'base-certificate' },
   ]);
 
-local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress=false, withServiceAccountObject={}, ingressConfig={}) = {
+local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress=false, withPublicApi=false, withServiceAccountObject={}, publicApiConfig={}, ingressConfig={}) = {
   local dc = deploymentConfig,
   local ic = ingressConfig,
   local mainContainer = containerSpecs([dc.container]),
@@ -194,6 +221,8 @@ local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress
   ),
 
   ingress: if withIngress then ingressSpec(ic, s.service),
+
+  publicApiIngress: if withPublicApi then publicApiIngressSpec(publicApiConfig),
 };
 
 local letsbuildServiceStatefulSet(statefulsetConfig, withService=true) = {
