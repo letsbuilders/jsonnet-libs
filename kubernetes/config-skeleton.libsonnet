@@ -4,6 +4,7 @@
 
     namespace: error '_config.namespace must be set',
     clusterDomain: error 'clusterDomain has to be set',
+    envDomain: '%(namespace)s.%(clusterDomain)s' % { namespace: s.namespace, clusterDomain: s.clusterDomain },
 
     deployment: {
       local depl = self,
@@ -118,6 +119,11 @@
     },
     ingress: {
       host: error '_config.ingress.host must be set',
+    },
+    publicAPI: {
+      host: 'api.%(envDomain)s' % { envDomain: s.envDomain },
+      name: s.deployment.name,
+      paths: ['/'],
     },
   },
 }
