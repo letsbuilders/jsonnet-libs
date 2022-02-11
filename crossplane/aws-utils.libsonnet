@@ -1,6 +1,7 @@
 // Helper utilities for AWS resources
-local aws = import 'aws.libsonnet';
-local role = aws.identity.v1beta1.role;
+local aws = import 'github.com/jsonnet-libs/crossplane-libsonnet/provider-aws/0.23/main.libsonnet';
+
+local role = aws.iam.v1beta1.role;
 local bucket = aws.s3.v1beta1.bucket;
 local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
 
@@ -66,39 +67,36 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
   },
 
 
-  allowRoleToBucketPolicy:: {
-    version: '2012-10-17',
-    statements: [
-      {
-        sid: 'DownloadandUpload',
-        action: ['s3:GetObject', 's3:GetObjectAcl', 's3:GetObjectVersion', 's3:PutObject', 's3:PutObjectAcl', 's3:DeleteObject', 's3:DeleteObjectVersion'],
-        effect: 'Allow',
-        resource: ['arn:aws:s3:::%s/*' % s.bucketName],
-        principal: {
-          awsPrincipals: [
-            {
-              // If I use iamRoleArnRef here tanka wants to remove iamRoleArn because it gets added by crossplane
-              // https://github.com/crossplane/provider-aws/issues/555
-              iamRoleArn: 'arn:aws:iam::%(accountId)s:role/%(roleName)s' % { accountId: c.aws.accountId, roleName: s.roleName },
-            },
-          ],
-        },
+  allowRoleToBucketPolicy:: [
+    {
+      sid: 'DownloadandUpload',
+      action: ['s3:GetObject', 's3:GetObjectAcl', 's3:GetObjectVersion', 's3:PutObject', 's3:PutObjectAcl', 's3:DeleteObject', 's3:DeleteObjectVersion'],
+      effect: 'Allow',
+      resource: ['arn:aws:s3:::%s/*' % s.bucketName],
+      principal: {
+        awsPrincipals: [
+          {
+            // If I use iamRoleArnRef here tanka wants to remove iamRoleArn because it gets added by crossplane
+            // https://github.com/crossplane/provider-aws/issues/555
+            iamRoleArn: 'arn:aws:iam::%(accountId)s:role/%(roleName)s' % { accountId: c.aws.accountId, roleName: s.roleName },
+          },
+        ],
       },
-      {
-        sid: 'List',
-        action: ['s3:ListBucket'],
-        effect: 'Allow',
-        resource: ['arn:aws:s3:::%s' % s.bucketName],
-        principal: {
-          awsPrincipals: [
-            {
-              iamRoleArn: 'arn:aws:iam::%(accountId)s:role/%(roleName)s' % { accountId: c.aws.accountId, roleName: s.roleName },
-            },
-          ],
-        },
+    },
+    {
+      sid: 'List',
+      action: ['s3:ListBucket'],
+      effect: 'Allow',
+      resource: ['arn:aws:s3:::%s' % s.bucketName],
+      principal: {
+        awsPrincipals: [
+          {
+            iamRoleArn: 'arn:aws:iam::%(accountId)s:role/%(roleName)s' % { accountId: c.aws.accountId, roleName: s.roleName },
+          },
+        ],
       },
-    ]
-  },
+    },
+  ],
 
   overrides:: {
     // service_account field overrides
@@ -120,18 +118,23 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
   bucket:: {
     bucket:
       bucket.new(name=s.bucketName)
-      + bucket.mixin.spec.providerConfigRef.new(c.crossplaneProvider)
-      + bucket.mixin.spec.forProvider.new(region=c.aws.region, acl=c.aws.bucket.acl),
+      + bucket.mixin.spec.providerConfigRef.withName(c.crossplaneProvider)
+      + bucket.mixin.spec.forProvider.withLocationConstraint(c.aws.region)
+      + bucket.mixin.spec.forProvider.withAcl(c.aws.bucket.acl),
     bucketPolicy:
-      bucketPolicy.new(name=s.bucketName, bucketName=s.bucketName, region=c.aws.region, policy=s.allowRoleToBucketPolicy)
-      + bucketPolicy.mixin.spec.providerConfigRef.new(c.crossplaneProvider),
+      bucketPolicy.new(name=s.bucketName)
+      + bucketPolicy.mixin.spec.forProvider.withBucketName(s.bucketName)
+      + bucketPolicy.mixin.spec.forProvider.withRegion(c.aws.region)
+      + bucketPolicy.mixin.spec.forProvider.policy.withVersion('2012-10-17')
+      + bucketPolicy.mixin.spec.forProvider.policy.withStatements(s.allowRoleToBucketPolicy)
+      + bucketPolicy.mixin.spec.providerConfigRef.withName(c.crossplaneProvider),
   },
 
   iamRole:: {
     role:
       role.new(s.roleName)
-      + role.mixin.spec.forProvider.new(s.serviceAccountTrustRelationship)
-      + role.mixin.spec.providerConfigRef.new(c.crossplaneProvider),
+      + role.mixin.spec.forProvider.withAssumeRolePolicyDocument(s.serviceAccountTrustRelationship)
+      + role.mixin.spec.providerConfigRef.withName(c.crossplaneProvider),
   },
 
 }
