@@ -34,9 +34,9 @@
             valueFrom: { fieldRef: { fieldPath: 'status.podIP' } },
           },
           {
-            name: 'CONTAINER_NAME',
-            value: cont.name,
-          },
+            name: 'OTEL_RESOURCE_ATTRIBUTES',
+            value: 'k8s.pod.ip=$(POD_IP),container=%s' % cont.name
+          }
         ],
         envFrom: [],
       },
@@ -73,9 +73,9 @@
             valueFrom: { fieldRef: { fieldPath: 'status.podIP' } },
           },
           {
-            name: 'CONTAINER_NAME',
-            value: cont.name,
-          },
+            name: 'OTEL_RESOURCE_ATTRIBUTES',
+            value: 'k8s.pod.ip=$(POD_IP),container=%s' % cont.name
+          }
         ],
         envFrom: [],
       },
@@ -108,9 +108,9 @@
             valueFrom: { fieldRef: { fieldPath: 'status.podIP' } },
           },
           {
-            name: 'CONTAINER_NAME',
-            value: cont.name,
-          },
+            name: 'OTEL_RESOURCE_ATTRIBUTES',
+            value: 'k8s.pod.ip=$(POD_IP),container=%s' % cont.name
+          }
         ],
         envFrom: [],
       },
