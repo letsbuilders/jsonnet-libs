@@ -1,5 +1,5 @@
 // Helper utilities for AWS resources
-local aws = import 'github.com/jsonnet-libs/crossplane-libsonnet/provider-aws/0.23/main.libsonnet';
+local aws = import 'provider-aws.libsonnet';
 
 local role = aws.iam.v1beta1.role;
 local bucket = aws.s3.v1beta1.bucket;
