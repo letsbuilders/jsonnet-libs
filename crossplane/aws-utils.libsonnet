@@ -133,7 +133,7 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
   iamRole:: {
     role:
       role.new(s.roleName)
-      + role.mixin.spec.forProvider.withAssumeRolePolicyDocument(s.serviceAccountTrustRelationship)
+      + role.mixin.spec.forProvider.withAssumeRolePolicyDocument(std.manifestJsonEx(s.serviceAccountTrustRelationship, '  '))
       + role.mixin.spec.providerConfigRef.withName(c.crossplaneProvider),
   },
 
