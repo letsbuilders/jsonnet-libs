@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "dependencies": [
+    {
+      "source": {
+        "git": {
+          "remote": "https://github.com/jsonnet-libs/crossplane-libsonnet.git",
+          "subdir": "provider-aws/0.24"
+        }
+      },
+      "version": "fa6e451bc882af04d63830797ee356b885433a94",
+      "sum": "QaZ8YItdE6re/pPh67jcVcPnGMec8cVdy+DYYyUnHls="
+    }
+  ],
+  "legacyImports": false
+}
