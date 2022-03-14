@@ -80,7 +80,7 @@ local publicApiIngressSpec(publicApiConfig) =
   )
   + ingress.mixin.spec.withRules([
     {
-      host: publicApiConfig.host,
+      host: host,
       http: {
         paths: [
           {
@@ -91,7 +91,8 @@ local publicApiIngressSpec(publicApiConfig) =
           for path in publicApiConfig.paths
         ],
       },
-    },
+    }
+    for host in publicApiConfig.hosts
   ]);
 
 local ingressSpec(ingressConfig, serviceObject) =
@@ -118,17 +119,18 @@ local ingressSpec(ingressConfig, serviceObject) =
   )
   + ingress.mixin.spec.withRules([
     {
-      host: ingressConfig.host,
+      host: host,
       http: {
         paths: [
           { path: path, backend: { serviceName: serviceObject.metadata.name, servicePort: serviceObject.spec.ports[0].port } }
           for path in paths
         ],
       },
-    },
+    }
+    for host in ingressConfig.hosts
   ])
   + ingress.mixin.spec.withTls([
-    { hosts: [ingressConfig.host], secretName: 'base-certificate' },
+    { hosts: ingressConfig.hosts, secretName: 'base-certificate' },
   ]);
 
 local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress=false, withPublicApi=false, withServiceAccountObject={}, publicApiConfig={}, ingressConfig={}) = {
