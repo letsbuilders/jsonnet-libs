@@ -1,5 +1,5 @@
 {
-  aws: (import 'aws-utils.libsonnet') + {
+  aws: (import 'crossplane/aws-utils.libsonnet') + {
     _config+:: {
       aws+: {
         region: 'eu-west-1',

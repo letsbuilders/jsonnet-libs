@@ -1,5 +1,5 @@
 local k = import 'github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet';
-local util = import 'ksonnet-util/util.libsonnet';
+local util = import 'github.com/grafana/jsonnet-libs/ksonnet-util/util.libsonnet';
 
 local containerSpecs(containersConfig) = [
   local container = k.core.v1.container;
