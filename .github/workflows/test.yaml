@@ -7,7 +7,7 @@ on:
 
 jobs:
   tests:
-    name: Test crossplane libs
+    name: Test jsonnet libs
     runs-on: ubuntu-latest
     strategy:
       matrix:
