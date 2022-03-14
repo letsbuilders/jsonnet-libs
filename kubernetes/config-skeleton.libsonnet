@@ -11,6 +11,17 @@
 
       name: error '_config.deployment.name must be set',
 
+      labels: {},
+      annotations: {},
+
+      podLabels: {
+        team: error '_config.deployment.podLabels.team must be set',
+        dept: 'product',
+        product: 'letsbuild',
+        env: s.namespace,
+      },
+      podAnnotations: {},
+
       container: {
         local cont = self,
 
@@ -35,8 +46,8 @@
           },
           {
             name: 'OTEL_RESOURCE_ATTRIBUTES',
-            value: 'k8s.pod.ip=$(POD_IP),container=%s' % cont.name
-          }
+            value: 'k8s.pod.ip=$(POD_IP),container=%s' % cont.name,
+          },
         ],
         envFrom: [],
       },
@@ -48,6 +59,13 @@
       local job = self,
 
       name: error '_config.job.name must be set',
+
+      labels: {
+        team: error '_config.job.labels.team must be set',
+        dept: 'product',
+        product: 'letsbuild',
+        env: s.namespace,
+      },
 
       container: {
         local cont = self,
@@ -74,8 +92,8 @@
           },
           {
             name: 'OTEL_RESOURCE_ATTRIBUTES',
-            value: 'k8s.pod.ip=$(POD_IP),container=%s' % cont.name
-          }
+            value: 'k8s.pod.ip=$(POD_IP),container=%s' % cont.name,
+          },
         ],
         envFrom: [],
       },
@@ -85,6 +103,12 @@
 
       name: error '_config.statefulSet.name must be set',
 
+      labels: {
+        team: error '_config.statefulSet.labels.team must be set',
+        dept: 'product',
+        product: 'letsbuild',
+        env: s.namespace,
+      },
 
       container: {
         local cont = self,
@@ -109,8 +133,8 @@
           },
           {
             name: 'OTEL_RESOURCE_ATTRIBUTES',
-            value: 'k8s.pod.ip=$(POD_IP),container=%s' % cont.name
-          }
+            value: 'k8s.pod.ip=$(POD_IP),container=%s' % cont.name,
+          },
         ],
         envFrom: [],
       },

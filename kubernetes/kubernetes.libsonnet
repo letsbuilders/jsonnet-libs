@@ -149,19 +149,34 @@ local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress
     deployment.new(dc.name, replicas=1, containers=containers)
     // Hide replicas to avoid conflicts with HPA
     + (if std.objectHas(dc, 'autoscaling') then { spec+: { replicas:: null } } else {})
-    + deployment.mixin.spec.template.metadata.withAnnotations({
-      'sidecar.istio.io/proxyCPU': '48m',
-      //      'sidecar.istio.io/proxyCPULimit': '',
-      'sidecar.istio.io/proxyMemory': '64Mi',
-      //      'sidecar.istio.io/proxyMemoryLimit': '',
-      'argocd.argoproj.io/sync-wave': '1',
-    })
-    + deployment.mixin.spec.template.metadata.withLabels({
-      name: dc.name,
-      app: dc.name,
-      version: dc.container.tag,
-
-    })
+    // Deployment labels
+    + deployment.mixin.metadata.withLabels(dc.labels)
+    // Pod annotations
+    + deployment.mixin.spec.template.metadata.withAnnotations(
+      // Force default values for istio
+      // Defined here instead of config-skeleton.libsonnet to prevent accidental removal
+      {
+        'sidecar.istio.io/proxyCPU': '10m',
+        //      'sidecar.istio.io/proxyCPULimit': '',
+        'sidecar.istio.io/proxyMemory': '80Mi',
+        //      'sidecar.istio.io/proxyMemoryLimit': '',
+        'argocd.argoproj.io/sync-wave': '1',
+      }
+      + dc.podAnnotations
+    )
+    // Pod labels
+    + deployment.mixin.spec.template.metadata.withLabels(
+      // Force default values for istio
+      // Defined here instead of config-skeleton.libsonnet to prevent accidental removal
+      {
+        name: dc.name,
+        app: dc.name,
+        version: dc.container.tag,
+      }
+      + dc.podLabels
+    )
+    // Pod topology spread constrains
+    // https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/
     + deployment.mixin.spec.template.spec.withTopologySpreadConstraints([
       {
         maxSkew: 1,
@@ -175,6 +190,7 @@ local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress
         },
       },
     ])
+    // Init containers
     + deployment.mixin.spec.template.spec.withInitContainers(initContainers)
     // Setting revisionHistoryLimit to clean up unused ReplicaSets
     + deployment.mixin.spec.withRevisionHistoryLimit(
@@ -249,6 +265,12 @@ local letsbuildServiceStatefulSet(statefulsetConfig, withService=true) = {
       //      'sidecar.istio.io/proxyMemoryLimit': '',
       'argocd.argoproj.io/sync-wave': '1',
     })
+    + statefulSet.mixin.spec.withLabels((if std.objectHas(statefulsetConfig, 'labels') then statefulsetConfig.labels else {}))
+    + statefulSet.mixin.spec.template.metadata.withLabels({
+      name: statefulsetConfig.name,
+      app: statefulsetConfig.name,
+      version: statefulsetConfig.container.tag,
+    } + (if std.objectHas(statefulsetConfig, 'labels') then statefulsetConfig.labels else {}))
     + statefulSet.mixin.spec.template.spec.withNodeSelector({
       'kubernetes.io/os': 'linux',
       'letsbuild.com/purpose': 'worker',
@@ -294,6 +316,12 @@ local letsbuildJob(config, withServiceAccountObject={}) = {
       'letsbuild.com/purpose': 'worker',
       'kubernetes.io/arch': 'amd64',
     })
+    + job.mixin.spec.withLabels((if std.objectHas(config, 'labels') then config.labels else {}))
+    + job.mixin.spec.template.metadata.withLabels({
+      name: config.name,
+      app: config.name,
+      version: config.container.tag,
+    } + (if std.objectHas(config, 'labels') then config.labels else {}))
     + job.mixin.spec.withBackoffLimit(0)
     + job.mixin.spec.withTtlSecondsAfterFinished(180)
     + job.mixin.spec.template.spec.withRestartPolicy('Never')
