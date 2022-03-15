@@ -28,6 +28,7 @@ function(namespace='test') {
   // Assertions
   assert std.objectHas(self.data.aws, 'bucket'),
   assert std.isObject(self.data.aws.bucket.bucket),
+  assert std.isArray(self.data.aws.bucket.bucket.spec.forProvider.tagging.tagSet),
   assert std.isObject(self.data.aws.bucket.bucketPolicy),
 
 }
