@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "dependencies": [
+    {
+      "source": {
+        "local": {
+          "directory": "../../crossplane"
+        }
+      },
+      "version": ""
+    },
+    {
+      "source": {
+        "git": {
+          "remote": "https://github.com/grafana/jsonnet-libs.git",
+          "subdir": "ksonnet-util"
+        }
+      },
+      "version": "98c3060877aa178f6bdfc6ac618fbe0043fc3de7",
+      "sum": "xo1A7iYvJ7OZ64q2dOZY0G8FGHHt+t/+vEJW3bnXHyk="
+    },
+    {
+      "source": {
+        "git": {
+          "remote": "https://github.com/jsonnet-libs/crossplane-libsonnet.git",
+          "subdir": "provider-aws/0.24"
+        }
+      },
+      "version": "ce976660c14b7c726c66857b27cea5e4580622e5",
+      "sum": "QaZ8YItdE6re/pPh67jcVcPnGMec8cVdy+DYYyUnHls="
+    },
+    {
+      "source": {
+        "git": {
+          "remote": "https://github.com/jsonnet-libs/k8s-libsonnet.git",
+          "subdir": "1.21"
+        }
+      },
+      "version": "4be83346f2c5b06a03cb8ee726ec66aab33a60bb",
+      "sum": "rKetT4IV4kavuEmJdTMklgesc/bq203XIVLHAXa+7lY="
+    },
+    {
+      "source": {
+        "local": {
+          "directory": "../../kubernetes"
+        }
+      },
+      "version": ""
+    }
+  ],
+  "legacyImports": false
+}

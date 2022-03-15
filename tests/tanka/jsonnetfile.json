@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "dependencies": [
+    {
+      "source": {
+        "local": {
+          "directory": "../../kubernetes"
+        }
+      },
+      "version": ""
+    },
+    {
+      "source": {
+        "local": {
+          "directory": "../../crossplane"
+        }
+      },
+      "version": ""
+    }
+  ],
+  "legacyImports": true
+}
