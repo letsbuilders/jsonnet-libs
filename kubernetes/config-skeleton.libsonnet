@@ -6,26 +6,32 @@
     clusterDomain: error 'clusterDomain has to be set',
     envDomain: '%(namespace)s.%(clusterDomain)s' % { namespace: s.namespace, clusterDomain: s.clusterDomain },
 
-    deployment: {
-      local depl = self,
+    common: {
+      // Shared settings between Deployment, StatefulSet and Job objects
+      local common = self,
 
-      name: error '_config.deployment.name must be set',
-
+      // Object labels
       labels: {},
+
+      // Object annotations
       annotations: {},
 
+      // Pod Labels
       podLabels: {
-        team: error '_config.deployment.podLabels.team must be set',
+        team: error 'podLabels.team must be set',
         dept: 'product',
         product: 'letsbuild',
         env: s.namespace,
       },
+
+      // Pod annotation
       podAnnotations: {},
 
+      // Main application containrt
       container: {
         local cont = self,
 
-        name: depl.name,
+        name: common.name,
         repository: error '_config.deployment.container.repository must be set',
         tag: error '_config.deployment.container.tag must be set',
         image: '%(repository)s:%(tag)s' % { repository: cont.repository, tag: cont.tag },
@@ -54,92 +60,31 @@
 
       sidecarContainers: [],
       initContainers: [],
+
     },
-    job: {
-      local job = self,
 
-      name: error '_config.job.name must be set',
+    deployment: s.common + {
+      local depl = self,
 
-      labels: {
-        team: error '_config.job.labels.team must be set',
-        dept: 'product',
-        product: 'letsbuild',
-        env: s.namespace,
-      },
-
-      container: {
-        local cont = self,
-
-        name: job.name,
-
-        repository: error '_config.job.container.repository must be set',
-        tag: error '_config.job.container.tag must be set',
-        image: '%(repository)s:%(tag)s' % { repository: cont.repository, tag: cont.tag },
-
-        imagePullPolicy: 'IfNotPresent',
-
-        envVars: {
-          ENVIRONMENT: s.namespace,
-        },
-        extraEnvVars: [
-          {
-            name: 'HOST_IP',
-            valueFrom: { fieldRef: { fieldPath: 'status.hostIP' } },
-          },
-          {
-            name: 'POD_IP',
-            valueFrom: { fieldRef: { fieldPath: 'status.podIP' } },
-          },
-          {
-            name: 'OTEL_RESOURCE_ATTRIBUTES',
-            value: 'k8s.pod.ip=$(POD_IP),container=%s' % cont.name,
-          },
-        ],
-        envFrom: [],
-      },
     },
-    statefulSet: {
-      local sts = self,
 
-      name: error '_config.statefulSet.name must be set',
-
-      labels: {
-        team: error '_config.statefulSet.labels.team must be set',
-        dept: 'product',
-        product: 'letsbuild',
-        env: s.namespace,
+    job: s.common + {
+      // overrides specific to Jobs
+      annotations+: {
+        // ArgoCD sync settings
+        'argocd.argoproj.io/hook': 'Sync',
+        'argocd.argoproj.io/hook-delete-policy': 'BeforeHookCreation',
+        'argocd.argoproj.io/sync-wave': '-1',
       },
+      podAnnotations+: {
+        'sidecar.istio.io/inject': 'false',
+        'sidecar.istio.io/proxyCPU':: null,
+        'sidecar.istio.io/proxyMemory':: null,
+      }
 
-      container: {
-        local cont = self,
-
-        name: sts.name,
-
-        repository: error '_config.statefulSet.container.repository must be set',
-        tag: error '_config.statefulSet.container.tag must be set',
-        image: '%(repository)s:%(tag)s' % { repository: cont.repository, tag: cont.tag },
-
-        envVars: {
-          ENVIRONMENT: s.namespace,
-        },
-        extraEnvVars: [
-          {
-            name: 'HOST_IP',
-            valueFrom: { fieldRef: { fieldPath: 'status.hostIP' } },
-          },
-          {
-            name: 'POD_IP',
-            valueFrom: { fieldRef: { fieldPath: 'status.podIP' } },
-          },
-          {
-            name: 'OTEL_RESOURCE_ATTRIBUTES',
-            value: 'k8s.pod.ip=$(POD_IP),container=%s' % cont.name,
-          },
-        ],
-        envFrom: [],
-      },
-      sidecarContainers: [],
-      initContainers: [],
+    },
+    statefulSet: s.common + {
+      // overrides specific to statefulsets
     },
     ingress: {
       host: error '_config.ingress.host must be set',

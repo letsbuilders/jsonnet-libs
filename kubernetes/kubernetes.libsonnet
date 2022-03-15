@@ -1,6 +1,36 @@
 local k = import 'github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet';
 local util = import 'github.com/grafana/jsonnet-libs/ksonnet-util/util.libsonnet';
 
+
+local objectMetadata(object, config) =
+  // object labels
+  object.mixin.metadata.withLabels(
+    {
+      name: config.name, app: config.name, 'letsbuild.com/service': config.name
+    } + config.labels
+  )
+  // object annotation
+  + object.mixin.metadata.withAnnotations(
+    {
+      'argocd.argoproj.io/sync-wave': '1',
+    } + config.annotations
+  )
+  // Pod labels
+  + object.mixin.spec.template.metadata.withLabels(
+    {
+      name: config.name, app: config.name, version: config.container.tag, 'letsbuild.com/service': config.name
+    } + config.podLabels
+  )
+  // Pod Annotation
+  + object.mixin.spec.template.metadata.withAnnotations(
+    {
+      'sidecar.istio.io/proxyCPU': '10m',
+      //      'sidecar.istio.io/proxyCPULimit': '',
+      'sidecar.istio.io/proxyMemory': '80Mi',
+      //      'sidecar.istio.io/proxyMemoryLimit': '',
+    } + config.podAnnotations
+  );
+
 local containerSpecs(containersConfig) = [
   local container = k.core.v1.container;
   local port = k.core.v1.containerPort;
@@ -149,32 +179,7 @@ local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress
     deployment.new(dc.name, replicas=1, containers=containers)
     // Hide replicas to avoid conflicts with HPA
     + (if std.objectHas(dc, 'autoscaling') then { spec+: { replicas:: null } } else {})
-    // Deployment labels
-    + deployment.mixin.metadata.withLabels(dc.labels)
-    // Pod annotations
-    + deployment.mixin.spec.template.metadata.withAnnotations(
-      // Force default values for istio
-      // Defined here instead of config-skeleton.libsonnet to prevent accidental removal
-      {
-        'sidecar.istio.io/proxyCPU': '10m',
-        //      'sidecar.istio.io/proxyCPULimit': '',
-        'sidecar.istio.io/proxyMemory': '80Mi',
-        //      'sidecar.istio.io/proxyMemoryLimit': '',
-        'argocd.argoproj.io/sync-wave': '1',
-      }
-      + dc.podAnnotations
-    )
-    // Pod labels
-    + deployment.mixin.spec.template.metadata.withLabels(
-      // Force default values for istio
-      // Defined here instead of config-skeleton.libsonnet to prevent accidental removal
-      {
-        name: dc.name,
-        app: dc.name,
-        version: dc.container.tag,
-      }
-      + dc.podLabels
-    )
+    + objectMetadata(deployment, dc)
     // Pod topology spread constrains
     // https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/
     + deployment.mixin.spec.template.spec.withTopologySpreadConstraints([
@@ -258,19 +263,9 @@ local letsbuildServiceStatefulSet(statefulsetConfig, withService=true) = {
     statefulSet.new(sts.name, replicas=1, containers=containers)
     // Hide replicas to avoid conflicts with HPA
     + (if std.objectHas(sts, 'autoscaling') then { spec+: { replicas:: null } } else {})
-    + statefulSet.mixin.spec.template.metadata.withAnnotations({
-      'sidecar.istio.io/proxyCPU': '48m',
-      //      'sidecar.istio.io/proxyCPULimit': '',
-      'sidecar.istio.io/proxyMemory': '64Mi',
-      //      'sidecar.istio.io/proxyMemoryLimit': '',
-      'argocd.argoproj.io/sync-wave': '1',
-    })
-    + statefulSet.mixin.spec.withLabels((if std.objectHas(statefulsetConfig, 'labels') then statefulsetConfig.labels else {}))
-    + statefulSet.mixin.spec.template.metadata.withLabels({
-      name: statefulsetConfig.name,
-      app: statefulsetConfig.name,
-      version: statefulsetConfig.container.tag,
-    } + (if std.objectHas(statefulsetConfig, 'labels') then statefulsetConfig.labels else {}))
+    // Object metadata
+    + objectMetadata(statefulSet, sts)
+    // Nodeselector
     + statefulSet.mixin.spec.template.spec.withNodeSelector({
       'kubernetes.io/os': 'linux',
       'letsbuild.com/purpose': 'worker',
@@ -307,21 +302,12 @@ local letsbuildJob(config, withServiceAccountObject={}) = {
   job:
     job.new()
     + job.mixin.metadata.withName(config.name)
-    // Disable Istio sidecar to avoid never-ending Jobs
-    + job.mixin.spec.template.metadata.withAnnotations({
-      'sidecar.istio.io/inject': 'false',
-    })
     + job.mixin.spec.template.spec.withNodeSelector({
       'kubernetes.io/os': 'linux',
       'letsbuild.com/purpose': 'worker',
       'kubernetes.io/arch': 'amd64',
     })
-    + job.mixin.spec.withLabels((if std.objectHas(config, 'labels') then config.labels else {}))
-    + job.mixin.spec.template.metadata.withLabels({
-      name: config.name,
-      app: config.name,
-      version: config.container.tag,
-    } + (if std.objectHas(config, 'labels') then config.labels else {}))
+    + objectMetadata(job, config)
     + job.mixin.spec.withBackoffLimit(0)
     + job.mixin.spec.withTtlSecondsAfterFinished(180)
     + job.mixin.spec.template.spec.withRestartPolicy('Never')
