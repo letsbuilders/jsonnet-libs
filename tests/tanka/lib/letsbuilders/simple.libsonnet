@@ -12,4 +12,9 @@ local lbKubernetes = import 'kubernetes/kubernetes.libsonnet';
       withIngress=true,
       ingressConfig=c.ingress,
     ),
+
+  statefulSet:
+    lbKubernetes.letsbuildServiceStatefulSet(c.statefulSet, withService=true),
+  job:
+    lbKubernetes.letsbuildJob(c.job),
 }

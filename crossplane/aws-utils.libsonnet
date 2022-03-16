@@ -8,6 +8,8 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
 
 {
   _config:: {
+    local s = self,
+
     serviceName: error 'serviceName must be provided',
     serviceNamespace: error 'serviceNamespace must be provided',
     crossplaneProvider: 'aws-provider',
@@ -21,12 +23,26 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
       bucket: {
         acl: 'private',
       },
+      tagging: {
+        kubernetes_cluster: s.aws.clusterName,
+        kubernetes_namespace: s.serviceNamespace,
+        kubernetes_deployment: s.serviceName,
+        kubernetes_container: s.serviceName,
+      }
     },
   },
 
   local s = self,
   local c = $._config,
-  local aws = c.aws,
+
+  // Resource tags
+  // convert a map of tags defined in c.aws.tagging to a list of key,value pairs
+  // This allows easy overriding of tags in c.aws.tagging and generates a format required by crossplane API
+
+  local tagSets = [
+    { key: key, value: c.aws.tagging[key]}
+    for key in std.objectFields(c.aws.tagging)
+  ],
 
   // Resource names
 
@@ -120,6 +136,7 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
       bucket.new(name=s.bucketName)
       + bucket.mixin.spec.providerConfigRef.withName(c.crossplaneProvider)
       + bucket.mixin.spec.forProvider.withLocationConstraint(c.aws.region)
+      + bucket.mixin.spec.forProvider.tagging.withTagSet(tagSets)
       + bucket.mixin.spec.forProvider.withAcl(c.aws.bucket.acl),
     bucketPolicy:
       bucketPolicy.new(name=s.bucketName)

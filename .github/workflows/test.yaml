@@ -24,11 +24,18 @@ jobs:
       - run: |
           go install github.com/jsonnet-bundler/jsonnet-bundler/cmd/jb@latest
           go install github.com/grafana/tanka/cmd/tk@v0.20.0
+          go install github.com/yannh/kubeconform/cmd/kubeconform@latest
 
       # Install dependencies
       - run: ~/go/bin/jb install
         working-directory: ./tests/tanka
 
-      # Run tests
-      - run: ~/go/bin/tk eval environments/${{ matrix.testcase }} -V tag=test
+      # render manifests
+      - run:
+         ~/go/bin/tk show environments/${{ matrix.testcase }} --dangerous-allow-redirect -V tag=test > ${{ matrix.testcase }}.yaml
+        working-directory: ./tests/tanka
+
+      # validate manifests
+      - run:
+          ~/go/bin/kubeconform -kubernetes-version 1.21.0 -ignore-missing-schemas ${{ matrix.testcase }}.yaml
         working-directory: ./tests/tanka

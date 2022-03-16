@@ -1,6 +1,36 @@
 local k = import 'github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet';
 local util = import 'github.com/grafana/jsonnet-libs/ksonnet-util/util.libsonnet';
 
+
+local objectMetadata(object, config) =
+  // object labels
+  object.mixin.metadata.withLabels(
+    {
+      name: config.name, app: config.name, 'letsbuild.com/service': config.name
+    } + config.labels
+  )
+  // object annotation
+  + object.mixin.metadata.withAnnotations(
+    {
+      'argocd.argoproj.io/sync-wave': '1',
+    } + config.annotations
+  )
+  // Pod labels
+  + object.mixin.spec.template.metadata.withLabels(
+    {
+      name: config.name, app: config.name, version: config.container.tag, 'letsbuild.com/service': config.name
+    } + config.podLabels
+  )
+  // Pod Annotation
+  + object.mixin.spec.template.metadata.withAnnotations(
+    {
+      'sidecar.istio.io/proxyCPU': '10m',
+      //      'sidecar.istio.io/proxyCPULimit': '',
+      'sidecar.istio.io/proxyMemory': '80Mi',
+      //      'sidecar.istio.io/proxyMemoryLimit': '',
+    } + config.podAnnotations
+  );
+
 local containerSpecs(containersConfig) = [
   local container = k.core.v1.container;
   local port = k.core.v1.containerPort;
@@ -149,19 +179,9 @@ local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress
     deployment.new(dc.name, replicas=1, containers=containers)
     // Hide replicas to avoid conflicts with HPA
     + (if std.objectHas(dc, 'autoscaling') then { spec+: { replicas:: null } } else {})
-    + deployment.mixin.spec.template.metadata.withAnnotations({
-      'sidecar.istio.io/proxyCPU': '48m',
-      //      'sidecar.istio.io/proxyCPULimit': '',
-      'sidecar.istio.io/proxyMemory': '64Mi',
-      //      'sidecar.istio.io/proxyMemoryLimit': '',
-      'argocd.argoproj.io/sync-wave': '1',
-    })
-    + deployment.mixin.spec.template.metadata.withLabels({
-      name: dc.name,
-      app: dc.name,
-      version: dc.container.tag,
-
-    })
+    + objectMetadata(deployment, dc)
+    // Pod topology spread constrains
+    // https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/
     + deployment.mixin.spec.template.spec.withTopologySpreadConstraints([
       {
         maxSkew: 1,
@@ -175,6 +195,7 @@ local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress
         },
       },
     ])
+    // Init containers
     + deployment.mixin.spec.template.spec.withInitContainers(initContainers)
     // Setting revisionHistoryLimit to clean up unused ReplicaSets
     + deployment.mixin.spec.withRevisionHistoryLimit(
@@ -242,13 +263,9 @@ local letsbuildServiceStatefulSet(statefulsetConfig, withService=true) = {
     statefulSet.new(sts.name, replicas=1, containers=containers)
     // Hide replicas to avoid conflicts with HPA
     + (if std.objectHas(sts, 'autoscaling') then { spec+: { replicas:: null } } else {})
-    + statefulSet.mixin.spec.template.metadata.withAnnotations({
-      'sidecar.istio.io/proxyCPU': '48m',
-      //      'sidecar.istio.io/proxyCPULimit': '',
-      'sidecar.istio.io/proxyMemory': '64Mi',
-      //      'sidecar.istio.io/proxyMemoryLimit': '',
-      'argocd.argoproj.io/sync-wave': '1',
-    })
+    // Object metadata
+    + objectMetadata(statefulSet, sts)
+    // Nodeselector
     + statefulSet.mixin.spec.template.spec.withNodeSelector({
       'kubernetes.io/os': 'linux',
       'letsbuild.com/purpose': 'worker',
@@ -285,15 +302,12 @@ local letsbuildJob(config, withServiceAccountObject={}) = {
   job:
     job.new()
     + job.mixin.metadata.withName(config.name)
-    // Disable Istio sidecar to avoid never-ending Jobs
-    + job.mixin.spec.template.metadata.withAnnotations({
-      'sidecar.istio.io/inject': 'false',
-    })
     + job.mixin.spec.template.spec.withNodeSelector({
       'kubernetes.io/os': 'linux',
       'letsbuild.com/purpose': 'worker',
       'kubernetes.io/arch': 'amd64',
     })
+    + objectMetadata(job, config)
     + job.mixin.spec.withBackoffLimit(0)
     + job.mixin.spec.withTtlSecondsAfterFinished(180)
     + job.mixin.spec.template.spec.withRestartPolicy('Never')
