@@ -88,9 +88,13 @@
     },
     ingress: {
       host: error '_config.ingress.host must be set',
+      // converting `host` to a list of hosts for backwards compatibility
+      hosts: [self.host],
     },
     publicAPI: {
       host: 'api.%(envDomain)s' % { envDomain: s.envDomain },
+      // converting `host` to a list of hosts for backwards compatibility
+      hosts: [self.host],
       name: s.deployment.name,
       paths: ['/'],
     },
