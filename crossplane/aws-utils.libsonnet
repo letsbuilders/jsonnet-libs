@@ -22,6 +22,7 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
       region: error 'region must be provided',
       bucket: {
         acl: 'private',
+        scan: false ,
       },
       tagging: {
         kubernetes_cluster: s.aws.clusterName,
@@ -129,6 +130,19 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
     },
   },
 
+ // notificationConfiguration  for S3 virus scan 
+ // https://github.com/letsbuilders/DevOps/issues/59
+ 	notificationConfiguration:: {
+    queueConfigurations: [
+      {
+        queueArn: c.aws.queueArn,
+        events: [
+          c.aws.events,
+        ],
+      },
+    ],
+  },
+	
   // Resources
 
   bucket:: {
@@ -138,6 +152,8 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
       + bucket.mixin.spec.forProvider.withLocationConstraint(c.aws.region)
       + bucket.mixin.spec.forProvider.tagging.withTagSet(tagSets)
       + bucket.mixin.spec.forProvider.withAcl(c.aws.bucket.acl),
+      + (if c.aws.bucket.scan== true then bucket.mixin.spec.forProvider.notificationConfiguration.withQueueConfigurations(s.notificationConfiguration.queueConfigurations)
+        else {}),
     bucketPolicy:
       bucketPolicy.new(name=s.bucketName)
       + bucketPolicy.mixin.spec.forProvider.withBucketName(s.bucketName)
