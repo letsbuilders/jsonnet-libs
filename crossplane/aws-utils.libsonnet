@@ -22,14 +22,20 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
       region: error 'region must be provided',
       bucket: {
         acl: 'private',
-        scan: false ,
+        scan: false,
+        notifications: {
+          queueArn: 'queueArn',
+          events: 'events',
+        },
       },
+
+
       tagging: {
         kubernetes_cluster: s.aws.clusterName,
         kubernetes_namespace: s.serviceNamespace,
         kubernetes_deployment: s.serviceName,
         kubernetes_container: s.serviceName,
-      }
+      },
     },
   },
 
@@ -41,7 +47,7 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
   // This allows easy overriding of tags in c.aws.tagging and generates a format required by crossplane API
 
   local tagSets = [
-    { key: key, value: c.aws.tagging[key]}
+    { key: key, value: c.aws.tagging[key] }
     for key in std.objectFields(c.aws.tagging)
   ],
 
@@ -130,19 +136,19 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
     },
   },
 
- // notificationConfiguration  for S3 virus scan 
- // https://github.com/letsbuilders/DevOps/issues/59
- 	notificationConfiguration:: {
+  // notificationConfiguration  for S3 virus scan
+  // https://github.com/letsbuilders/DevOps/issues/59
+  notificationConfiguration:: {
     queueConfigurations: [
       {
-        queueArn: c.aws.queueArn,
+        queueArn: c.aws.bucket.notifications.queueArn,
         events: [
-          c.aws.events,
+          c.aws.bucket.notifications.events,
         ],
       },
     ],
   },
-	
+
   // Resources
 
   bucket:: {
@@ -152,8 +158,8 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
       + bucket.mixin.spec.forProvider.withLocationConstraint(c.aws.region)
       + bucket.mixin.spec.forProvider.tagging.withTagSet(tagSets)
       + bucket.mixin.spec.forProvider.withAcl(c.aws.bucket.acl)
-      + (if c.aws.bucket.scan== true then bucket.mixin.spec.forProvider.notificationConfiguration.withQueueConfigurations(s.notificationConfiguration.queueConfigurations)
-        else {}),
+      + (if c.aws.bucket.scan == true then bucket.mixin.spec.forProvider.notificationConfiguration.withQueueConfigurations(s.notificationConfiguration.queueConfigurations)
+         else {}),
     bucketPolicy:
       bucketPolicy.new(name=s.bucketName)
       + bucketPolicy.mixin.spec.forProvider.withBucketName(s.bucketName)
