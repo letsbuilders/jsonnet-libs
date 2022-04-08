@@ -28,8 +28,6 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
           events: 'events',
         },
       },
-
-
       tagging: {
         kubernetes_cluster: s.aws.clusterName,
         kubernetes_namespace: s.serviceNamespace,
@@ -150,7 +148,6 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
   },
 
   // Resources
-
   bucket:: {
     bucket:
       bucket.new(name=s.bucketName)
