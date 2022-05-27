@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        testcase: [ simple, aws ]
+        testcase: [ simple, aws, postgres ]
     env:
       GO111MODULE: on
 

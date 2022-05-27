@@ -46,6 +46,14 @@
         }
       },
       "version": ""
+    },
+    {
+      "source": {
+        "local": {
+          "directory": "../../postgres"
+        }
+      },
+      "version": ""
     }
   ],
   "legacyImports": false

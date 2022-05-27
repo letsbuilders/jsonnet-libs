@@ -46,7 +46,7 @@ local user(username, hostName, databaseName, priv, secretName='', name='') = {
     user: username,
   },
 
-  apiVersion: 'postgres.letsbuild.com/v1alpha1',
+  apiVersion: 'postgres.letsbuild.com/v1alpha2',
   kind: 'User',
   metadata: {
     name: if name == '' then defaultName else name,
@@ -55,13 +55,14 @@ local user(username, hostName, databaseName, priv, secretName='', name='') = {
     },
   },
   spec: {
-    hostRef: {
-      name: hostName,
-    },
     username: username,
-    secretName: if secretName == '' then defaultName else secretName,
+    writeConnectionSecretToRef: {
+      name: if secretName == '' then defaultName else secretName,
+    },
     grant: {
-      databaseName: databaseName,
+      databaseRef: {
+        name: databaseName
+      },
       priv: priv,
     },
   },
