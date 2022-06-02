@@ -38,10 +38,9 @@ local database(databaseName, hostName, dropOnDeletion=true, name='', extensions=
   },
 };
 
-local user(username, hostName, databaseName, priv, secretName='', name='') = {
+local user(username, databaseName, priv, secretName='', name='') = {
 
-  local defaultName = '%(host)s-%(database)s-%(user)s' % {
-    host: hostName,
+  local defaultName = '%(database)s-%(user)s' % {
     database: databaseName,
     user: username,
   },

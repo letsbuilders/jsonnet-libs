@@ -14,8 +14,7 @@ local lbPostgres = import 'postgres/postgres.libsonnet';
 
   postgresUser: lbPostgres.user(
     username=c.deployment.name,
-    hostName=self.postgresDatabase.spec.hostRef.name,
-    databaseName=self.postgresDatabase.spec.databaseName,
+    databaseName=self.postgresDatabase.metadata.name,
     secretName='%s-postgres' % c.deployment.name,
     priv='ALL',
   ),
