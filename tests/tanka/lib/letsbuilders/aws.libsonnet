@@ -9,6 +9,19 @@
         oidcUrl: 'oidc.eks.eu-west-1.amazonaws.com/id/TESTTESTTESTTESTTESTTEST',
         crossplaneProvider: 'aws-provider',
         clusterDomain: 'test.lb4.co',
+        bucket+: {
+          lifecycleRules+: [
+            {
+              status: 'Enabled',
+              expiration: {
+                days: 14,
+              },
+              filter: {
+                prefix: 'tmp/',
+              },
+            },
+          ],
+        },
       },
       serviceName: 'test',
       serviceNamespace: 'test',
