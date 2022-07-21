@@ -4,9 +4,9 @@ local lbInitContainers = import 'kubernetes/init-containers.libsonnet';
 {
   _config+: {
     local s = self,
+    name: 'test-service',
 
     deployment+: {
-      name: 'test-service',
 
       podLabels+: {
         team: 'devops',

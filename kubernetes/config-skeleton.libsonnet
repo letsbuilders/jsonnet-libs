@@ -10,8 +10,14 @@
       // Shared settings between Deployment, StatefulSet and Job objects
       local common = self,
 
+      name: s.name,
+
       // Object labels
-      labels: {},
+      labels: {
+        'app.kubernetes.io/name': common.name,
+        'app.kubernetes.io/instance': '%s-%s' % [common.name, s.namespace],
+        'app.kubernetes.io/part-of': 'letsbuild',
+      },
 
       // Object annotations
       annotations: {},
@@ -22,6 +28,9 @@
         dept: 'product',
         product: 'letsbuild',
         env: s.namespace,
+        'app.kubernetes.io/name': common.name,
+        'app.kubernetes.io/instance': '%s-%s' % [common.name, s.namespace],
+        'app.kubernetes.io/part-of': 'letsbuild',
       },
 
       // Pod annotation
@@ -63,12 +72,12 @@
 
     },
 
-    deployment: s.common + {
+    deployment: s.common {
       local depl = self,
 
     },
 
-    job: s.common + {
+    job: s.common {
       // overrides specific to Jobs
       annotations+: {
         // ArgoCD sync settings
@@ -80,22 +89,32 @@
         'sidecar.istio.io/inject': 'false',
         'sidecar.istio.io/proxyCPU':: null,
         'sidecar.istio.io/proxyMemory':: null,
-      }
+      },
 
     },
-    statefulSet: s.common + {
+    statefulSet: s.common {
       // overrides specific to statefulsets
     },
     ingress: {
+      name: s.name,
       host: error '_config.ingress.host must be set',
       // converting `host` to a list of hosts for backwards compatibility
       hosts: [self.host],
+      // Object labels
+      labels: {
+        'app.kubernetes.io/name': s.name,
+        'app.kubernetes.io/instance': '%s-%s' % [s.name, s.namespace],
+        'app.kubernetes.io/part-of': 'letsbuild',
+      },
+
+      // Object annotations
+      annotations: {},
     },
     publicAPI: {
+      name: s.name,
       host: 'api.%(envDomain)s' % { envDomain: s.envDomain },
       // converting `host` to a list of hosts for backwards compatibility
       hosts: [self.host],
-      name: s.deployment.name,
       paths: ['/'],
     },
   },
