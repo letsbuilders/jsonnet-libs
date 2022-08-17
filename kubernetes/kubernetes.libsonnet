@@ -4,31 +4,61 @@ local util = import 'github.com/grafana/jsonnet-libs/ksonnet-util/util.libsonnet
 
 local objectMetadata(object, config) =
   // object labels
-  object.mixin.metadata.withLabels(
+  object.metadata.withLabels(
     {
-      name: config.name, app: config.name, 'letsbuild.com/service': config.name
+      name: config.name,
+      app: config.name,
+      'letsbuild.com/service': config.name,
     } + config.labels
   )
   // object annotation
-  + object.mixin.metadata.withAnnotations(
+  + object.metadata.withAnnotations(
     {
       'argocd.argoproj.io/sync-wave': '1',
     } + config.annotations
   )
   // Pod labels
-  + object.mixin.spec.template.metadata.withLabels(
+  + object.spec.template.metadata.withLabels(
     {
-      name: config.name, app: config.name, version: config.container.tag, 'letsbuild.com/service': config.name
+      name: config.name,
+      app: config.name,
+      version: config.container.tag,
+      'letsbuild.com/service': config.name,
     } + config.podLabels
   )
   // Pod Annotation
-  + object.mixin.spec.template.metadata.withAnnotations(
+  + object.spec.template.metadata.withAnnotations(
     {
       'sidecar.istio.io/proxyCPU': '10m',
       //      'sidecar.istio.io/proxyCPULimit': '',
       'sidecar.istio.io/proxyMemory': '80Mi',
       //      'sidecar.istio.io/proxyMemoryLimit': '',
     } + config.podAnnotations
+  );
+
+local serviceSpec(object, config) =
+  local service = k.core.v1.service;
+
+  util.serviceFor(object, nameFormat='%(port)s') +
+  {
+    spec+: {
+      selector+: {
+        // We don't want to use the version label in service selectors
+        // Services should select all versions of an app
+        // Otherwise rolling updates won't be possible
+        version:: null,
+      },
+    },
+  }
+  + service.metadata.withLabels(
+    { name: config.name, app: config.name, 'letsbuild.com/service': config.name }
+    + config.labels
+  )
+  // object annotation
+  + service.metadata.withAnnotations(
+    {
+      'argocd.argoproj.io/sync-wave': '1',
+    } + config.annotations
   );
 
 local containerSpecs(containersConfig) = [
@@ -97,57 +127,67 @@ local containerSpecs(containersConfig) = [
   for cont in containersConfig
 ];
 
-local publicApiIngressSpec(publicApiConfig) =
+local publicApiIngressSpec(config) =
   local ingress = k.extensions.v1beta1.ingress;
 
-  ingress.new(name=publicApiConfig.name)
-  + ingress.mixin.metadata.withAnnotations(
+  ingress.new(name=config.name)
+  + ingress.metadata.withAnnotations(
     {
       'kubernetes.io/ingress.class': 'nginx-public',
     }
     // Merge with config-specified annotations
-    + if std.objectHas(publicApiConfig, 'annotations') then publicApiConfig.annotations else {}
+    + if std.objectHas(config, 'annotations') then config.annotations else {}
   )
-  + ingress.mixin.spec.withRules([
+  + ingress.spec.withRules([
     {
       host: host,
       http: {
         paths: [
           {
-            path: '/%(name)s%(path)s' % { name: publicApiConfig.name, path: path },
+            path: '/%(name)s%(path)s' % { name: config.name, path: path },
             pathType: 'Prefix',
             backend: { serviceName: 'gateway', servicePort: 80 },
           }
-          for path in publicApiConfig.paths
+          for path in config.paths
         ],
       },
     }
-    for host in publicApiConfig.hosts
-  ]);
+    for host in config.hosts
+  ])
+  + ingress.metadata.withLabels(
+    { name: config.name, app: config.name, 'letsbuild.com/service': config.name }
+    + config.labels
+  )
+  // object annotation
+  + ingress.metadata.withAnnotations(
+    {
+      'argocd.argoproj.io/sync-wave': '1',
+    } + config.annotations
+  );
 
-local ingressSpec(ingressConfig, serviceObject) =
+local ingressSpec(config, serviceObject) =
   local ingress = k.extensions.v1beta1.ingress;
   // TODO After we decide on which Ingress Contoller we'll be using some logic may be simplified
   // Set the ingress class
-  local ingressClass = if std.objectHas(ingressConfig, 'class') then ingressConfig.class else 'nginx-public';
+  local ingressClass = if std.objectHas(config, 'class') then config.class else 'nginx-public';
   // Set cert-managers issuer
-  local certIssuer = if std.objectHas(ingressConfig, 'certIssuer') then ingressConfig.certIssuer else 'letsencrypt-prod';
+  local certIssuer = if std.objectHas(config, 'certIssuer') then config.certIssuer else 'letsencrypt-prod';
   // Set 'letsbuild.com/public' annotation
   // Dictates whether should the public external-dns instance create records
-  local isPublic = if std.objectHas(ingressConfig, 'isPublic') then ingressConfig.isPublic else false;
+  local isPublic = if std.objectHas(config, 'isPublic') then config.isPublic else false;
   // Set paths
-  local paths = if std.objectHas(ingressConfig, 'paths') then ingressConfig.paths else ['/'];
+  local paths = if std.objectHas(config, 'paths') then config.paths else ['/'];
 
-  ingress.new(name=serviceObject.metadata.name)
-  + ingress.mixin.metadata.withAnnotations(
+  ingress.new(name=config.name)
+  + ingress.metadata.withAnnotations(
     {
       'kubernetes.io/ingress.class': ingressClass,
       'letsbuild.com/public': std.toString(isPublic),
     }
     // Merge with config-specified annotations
-    + if std.objectHas(ingressConfig, 'annotations') then ingressConfig.annotations else {}
+    + if std.objectHas(config, 'annotations') then config.annotations else {}
   )
-  + ingress.mixin.spec.withRules([
+  + ingress.spec.withRules([
     {
       host: host,
       http: {
@@ -157,11 +197,21 @@ local ingressSpec(ingressConfig, serviceObject) =
         ],
       },
     }
-    for host in ingressConfig.hosts
+    for host in config.hosts
   ])
-  + ingress.mixin.spec.withTls([
-    { hosts: ingressConfig.hosts, secretName: 'base-certificate' },
-  ]);
+  + ingress.spec.withTls([
+    { hosts: config.hosts, secretName: 'base-certificate' },
+  ])
+  + ingress.metadata.withLabels(
+    { name: config.name, app: config.name, 'letsbuild.com/service': config.name }
+    + config.labels
+  )
+  // object annotation
+  + ingress.metadata.withAnnotations(
+    {
+      'argocd.argoproj.io/sync-wave': '1',
+    } + config.annotations
+  );
 
 local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress=false, withPublicApi=false, withServiceAccountObject={}, publicApiConfig={}, ingressConfig={}) = {
   local dc = deploymentConfig,
@@ -184,7 +234,7 @@ local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress
     + objectMetadata(deployment, dc)
     // Pod topology spread constrains
     // https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/
-    + deployment.mixin.spec.template.spec.withTopologySpreadConstraints([
+    + deployment.spec.template.spec.withTopologySpreadConstraints([
       {
         maxSkew: 1,
         topologyKey: 'topology.kubernetes.io/zone',
@@ -198,12 +248,12 @@ local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress
       },
     ])
     // Init containers
-    + deployment.mixin.spec.template.spec.withInitContainers(initContainers)
+    + deployment.spec.template.spec.withInitContainers(initContainers)
     // Setting revisionHistoryLimit to clean up unused ReplicaSets
-    + deployment.mixin.spec.withRevisionHistoryLimit(
+    + deployment.spec.withRevisionHistoryLimit(
       if std.objectHas(dc, 'revisionHistoryLimit') then dc.revisionHistoryLimit else 3
     )
-    + deployment.mixin.spec.template.spec.withNodeSelector({
+    + deployment.spec.template.spec.withNodeSelector({
       'kubernetes.io/os': 'linux',
       'letsbuild.com/purpose': 'worker',
       'kubernetes.io/arch': 'amd64',
@@ -211,36 +261,24 @@ local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress
     + (
       if std.length(withServiceAccountObject) > 0
       then
-        deployment.mixin.spec.template.spec.withServiceAccountName(withServiceAccountObject.metadata.name)
+        deployment.spec.template.spec.withServiceAccountName(withServiceAccountObject.metadata.name)
       else
         {}
     ),
 
   // We must generate a service if an ingress was requested
-  service:
-    if withService || withIngress
-    then util.serviceFor(s.deployment, nameFormat='%(port)s') + {
-      spec+: {
-        selector+: {
-          // We don't want to use the version label in service selectors
-          // Services should select all versions of an app
-          // Otherwise rolling updates won't be possible
-          version:: null,
-        },
-      },
-    }
-    else {},
+  service: if withService || withIngress then serviceSpec(s.deployment, dc) else {},
 
   hpa: (
     if std.objectHas(dc, 'autoscaling')
     then
       hpa.new(dc.name)
-      + hpa.mixin.spec.scaleTargetRef.withKind(s.deployment.kind)
-      + hpa.mixin.spec.scaleTargetRef.withName(s.deployment.metadata.name)
+      + hpa.spec.scaleTargetRef.withKind(s.deployment.kind)
+      + hpa.spec.scaleTargetRef.withName(s.deployment.metadata.name)
       // Override because this parameter is missing from the library
       + { spec+: { scaleTargetRef+: { apiVersion: s.deployment.apiVersion } } }
-      + hpa.mixin.spec.withMaxReplicas(dc.autoscaling.maxReplicas)
-      + hpa.mixin.spec.withMinReplicas(dc.autoscaling.minReplicas)
+      + hpa.spec.withMaxReplicas(dc.autoscaling.maxReplicas)
+      + hpa.spec.withMinReplicas(dc.autoscaling.minReplicas)
   ),
 
   ingress: if withIngress then ingressSpec(ic, s.service),
@@ -268,30 +306,30 @@ local letsbuildServiceStatefulSet(statefulsetConfig, withService=true) = {
     // Object metadata
     + objectMetadata(statefulSet, sts)
     // Nodeselector
-    + statefulSet.mixin.spec.template.spec.withNodeSelector({
+    + statefulSet.spec.template.spec.withNodeSelector({
       'kubernetes.io/os': 'linux',
       'letsbuild.com/purpose': 'worker',
       'kubernetes.io/arch': 'amd64',
     })
-    + statefulSet.mixin.spec.template.spec.withInitContainers(initContainers)
+    + statefulSet.spec.template.spec.withInitContainers(initContainers)
     // Setting revisionHistoryLimit to clean up unused ReplicaSets
-    + statefulSet.mixin.spec.withRevisionHistoryLimit(
+    + statefulSet.spec.withRevisionHistoryLimit(
       if std.objectHas(sts, 'revisionHistoryLimit') then sts.revisionHistoryLimit else 3
     )
-    + statefulSet.mixin.spec.withServiceName(sts.name),
+    + statefulSet.spec.withServiceName(sts.name),
 
-  service: if withService then util.serviceFor(s.statefulSet, nameFormat='%(port)s') else {},
+  service: if withService then serviceSpec(s.statefulSet, sts) else {},
 
   hpa: (
     if std.objectHas(sts, 'autoscaling')
     then
       hpa.new(sts.name)
-      + hpa.mixin.spec.scaleTargetRef.withKind(s.statefulSet.kind)
-      + hpa.mixin.spec.scaleTargetRef.withName(s.statefulSet.metadata.name)
+      + hpa.spec.scaleTargetRef.withKind(s.statefulSet.kind)
+      + hpa.spec.scaleTargetRef.withName(s.statefulSet.metadata.name)
       // Override because this parameter is missing from the library
       + { spec+: { scaleTargetRef+: { apiVersion: s.statefulSet.apiVersion } } }
-      + hpa.mixin.spec.withMaxReplicas(sts.autoscaling.maxReplicas)
-      + hpa.mixin.spec.withMinReplicas(sts.autoscaling.minReplicas)
+      + hpa.spec.withMaxReplicas(sts.autoscaling.maxReplicas)
+      + hpa.spec.withMinReplicas(sts.autoscaling.minReplicas)
   ),
 };
 
@@ -303,23 +341,23 @@ local letsbuildJob(config, withServiceAccountObject={}) = {
 
   job:
     job.new()
-    + job.mixin.metadata.withName(config.name)
-    + job.mixin.spec.template.spec.withNodeSelector({
+    + job.metadata.withName(config.name)
+    + job.spec.template.spec.withNodeSelector({
       'kubernetes.io/os': 'linux',
       'letsbuild.com/purpose': 'worker',
       'kubernetes.io/arch': 'amd64',
     })
     + objectMetadata(job, config)
-    + job.mixin.spec.withBackoffLimit(0)
-    + job.mixin.spec.withTtlSecondsAfterFinished(180)
-    + job.mixin.spec.template.spec.withRestartPolicy('Never')
-    + job.mixin.spec.template.spec.withContainers(containers)
-    + job.mixin.spec.template.spec.withInitContainers(initContainers)
+    + job.spec.withBackoffLimit(0)
+    + job.spec.withTtlSecondsAfterFinished(180)
+    + job.spec.template.spec.withRestartPolicy('Never')
+    + job.spec.template.spec.withContainers(containers)
+    + job.spec.template.spec.withInitContainers(initContainers)
     + (
       if std.length(withServiceAccountObject) > 0
       then
-        job.mixin.spec.template.spec.withServiceAccountName(withServiceAccountObject.metadata.name)
-        + job.mixin.spec.template.spec.withAutomountServiceAccountToken(true)
+        job.spec.template.spec.withServiceAccountName(withServiceAccountObject.metadata.name)
+        + job.spec.template.spec.withAutomountServiceAccountToken(true)
       else
         {}
     ),

@@ -9,5 +9,5 @@ local getWithDefault = function(obj, field, default=null) if std.objectHas(obj, 
   base64EncodeObjectValues:: base64EncodeObjectValues,
 
   // Return value of `field` in `obj` or `default` if `field` is not found
-  getWithDefault:: getWithDefault
+  getWithDefault:: getWithDefault,
 }
