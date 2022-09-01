@@ -34,7 +34,18 @@
       },
 
       // Pod annotation
-      podAnnotations: {},
+      podAnnotations: {
+
+      } + (
+        if std.objectHas(common.container, 'ports')
+        then {
+          'prometheus.istio.io/merge-metrics': 'true',
+          'prometheus.io/scrape': 'true',
+          'prometheus.io/path': '/metrics',
+          'prometheus.io/port': std.toString(common.container.ports[0].port),
+        }
+        else {}
+      ),
 
       // Main application containrt
       container: {
