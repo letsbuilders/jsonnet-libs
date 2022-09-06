@@ -134,9 +134,15 @@ local publicApiIngressSpec(config) =
   + ingress.metadata.withAnnotations(
     {
       'kubernetes.io/ingress.class': 'nginx-public',
+      'argocd.argoproj.io/sync-wave': '1',
     }
     // Merge with config-specified annotations
     + if std.objectHas(config, 'annotations') then config.annotations else {}
+  )
+  + ingress.metadata.withLabels(
+    { name: config.name, app: config.name, 'letsbuild.com/service': config.name }
+    // Merge with config-specified annotations
+    + if std.objectHas(config, 'labels') then config.labels else {}
   )
   + ingress.spec.withRules([
     {
@@ -153,17 +159,7 @@ local publicApiIngressSpec(config) =
       },
     }
     for host in config.hosts
-  ])
-  + ingress.metadata.withLabels(
-    { name: config.name, app: config.name, 'letsbuild.com/service': config.name }
-    + config.labels
-  )
-  // object annotation
-  + ingress.metadata.withAnnotations(
-    {
-      'argocd.argoproj.io/sync-wave': '1',
-    } + config.annotations
-  );
+  ]);
 
 local ingressSpec(config, serviceObject) =
   local ingress = k.extensions.v1beta1.ingress;
@@ -183,9 +179,14 @@ local ingressSpec(config, serviceObject) =
     {
       'kubernetes.io/ingress.class': ingressClass,
       'letsbuild.com/public': std.toString(isPublic),
+      'argocd.argoproj.io/sync-wave': '1',
     }
     // Merge with config-specified annotations
     + if std.objectHas(config, 'annotations') then config.annotations else {}
+  )
+  + ingress.metadata.withLabels(
+    { name: config.name, app: config.name, 'letsbuild.com/service': config.name }
+    + if std.objectHas(config, 'labels') then config.labels else {}
   )
   + ingress.spec.withRules([
     {
@@ -201,17 +202,7 @@ local ingressSpec(config, serviceObject) =
   ])
   + ingress.spec.withTls([
     { hosts: config.hosts, secretName: 'base-certificate' },
-  ])
-  + ingress.metadata.withLabels(
-    { name: config.name, app: config.name, 'letsbuild.com/service': config.name }
-    + config.labels
-  )
-  // object annotation
-  + ingress.metadata.withAnnotations(
-    {
-      'argocd.argoproj.io/sync-wave': '1',
-    } + config.annotations
-  );
+  ]);
 
 local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress=false, withPublicApi=false, withServiceAccountObject={}, publicApiConfig={}, ingressConfig={}) = {
   local dc = deploymentConfig,
