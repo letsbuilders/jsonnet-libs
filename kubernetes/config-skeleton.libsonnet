@@ -84,8 +84,8 @@
     },
 
     deployment: s.common {
+      // overrides specific to deployments
       local depl = self,
-
     },
 
     job: s.common {
@@ -105,6 +105,7 @@
     },
     statefulSet: s.common {
       // overrides specific to statefulsets
+      local sts = self,
     },
     ingress: {
       name: s.name,
@@ -127,6 +128,12 @@
       // converting `host` to a list of hosts for backwards compatibility
       hosts: [self.host],
       paths: ['/'],
+      // Object labels
+      labels: {
+        'app.kubernetes.io/name': s.name,
+        'app.kubernetes.io/instance': '%s-%s' % [s.name, s.namespace],
+        'app.kubernetes.io/part-of': 'letsbuild',
+      },
     },
   },
 }
