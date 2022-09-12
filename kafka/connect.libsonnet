@@ -8,7 +8,7 @@ local mongoConnector =
     clusterName='kafka',
     secretName='kafkaconnect-mongodb'
   ) {
-    apiVersion: 'kafka.strimzi.io/v1alpha1',
+    apiVersion: 'kafka.strimzi.io/v1beta2',
     kind: 'KafkaConnector',
     metadata: {
       name: name,
