@@ -128,7 +128,7 @@ local containerSpecs(containersConfig) = [
 ];
 
 local publicApiIngressSpec(config) =
-  local ingress = k.extensions.v1beta1.ingress;
+  local ingress = k.networking.v1.ingress;
 
   ingress.new(name=config.name)
   + ingress.metadata.withAnnotations(
@@ -152,7 +152,7 @@ local publicApiIngressSpec(config) =
           {
             path: '/%(name)s%(path)s' % { name: config.name, path: path },
             pathType: 'Prefix',
-            backend: { serviceName: 'gateway', servicePort: 80 },
+            backend: { service: { name: 'gateway', port: { number: 80 } } },
           }
           for path in config.paths
         ],
@@ -162,7 +162,7 @@ local publicApiIngressSpec(config) =
   ]);
 
 local ingressSpec(config, serviceObject) =
-  local ingress = k.extensions.v1beta1.ingress;
+  local ingress = k.networking.v1.ingress;
   // TODO After we decide on which Ingress Contoller we'll be using some logic may be simplified
   // Set the ingress class
   local ingressClass = if std.objectHas(config, 'class') then config.class else 'nginx-public';
@@ -193,7 +193,11 @@ local ingressSpec(config, serviceObject) =
       host: host,
       http: {
         paths: [
-          { path: path, backend: { serviceName: serviceObject.metadata.name, servicePort: serviceObject.spec.ports[0].port } }
+          {
+            path: path,
+            pathType: 'Prefix',
+            backend: { service: { name: serviceObject.metadata.name, port: { number: serviceObject.spec.ports[0].port } } },
+          }
           for path in paths
         ],
       },
