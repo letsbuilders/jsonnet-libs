@@ -135,5 +135,18 @@
         'app.kubernetes.io/part-of': 'letsbuild',
       },
     },
+    aproplanAPI: {
+      name: 'aproplan-%s' % s.name,
+      host: 'aproplan-api.%(envDomain)s' % { envDomain: s.envDomain },
+      // converting `host` to a list of hosts for backwards compatibility
+      hosts: [self.host],
+      paths: ['/'],
+      // Object labels
+      labels: {
+        'app.kubernetes.io/name': 'aproplan-%s' % s.name,
+        'app.kubernetes.io/instance': 'aproplan-%s-%s' % [s.name, s.namespace],
+        'app.kubernetes.io/part-of': 'aproplan',
+      },
+    },
   },
 }
