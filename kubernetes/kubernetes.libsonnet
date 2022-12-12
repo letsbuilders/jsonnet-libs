@@ -208,7 +208,17 @@ local ingressSpec(config, serviceObject) =
     { hosts: config.hosts, secretName: 'base-certificate' },
   ]);
 
-local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress=false, withPublicApi=false, withServiceAccountObject={}, publicApiConfig={}, ingressConfig={}) = {
+local letsbuildServiceDeployment(
+  deploymentConfig,
+  withService=true,
+  withIngress=false,
+  withPublicApi=false,
+  withAproplanApi=false,
+  withServiceAccountObject={},
+  publicApiConfig={},
+  aproplanApiConfig={},
+  ingressConfig={}
+      ) = {
   local dc = deploymentConfig,
   local ic = ingressConfig,
   local mainContainer = containerSpecs([dc.container]),
@@ -279,6 +289,8 @@ local letsbuildServiceDeployment(deploymentConfig, withService=true, withIngress
   ingress: if withIngress then ingressSpec(ic, s.service),
 
   publicApiIngress: if withPublicApi then publicApiIngressSpec(publicApiConfig),
+
+  aproplanApiIngress: if withAproplanApi then publicApiIngressSpec(aproplanApiConfig),
 };
 
 local letsbuildServiceStatefulSet(statefulsetConfig, withService=true) = {
