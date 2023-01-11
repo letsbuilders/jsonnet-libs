@@ -184,7 +184,7 @@
       },
     },
     aproplanAPI: {
-      name: 'aproplan-%s' % s.name,
+      name: s.name,
       host: 'aproplan-api.%(envDomain)s' % { envDomain: s.envDomain },
       // converting `host` to a list of hosts for backwards compatibility
       hosts: [self.host],
