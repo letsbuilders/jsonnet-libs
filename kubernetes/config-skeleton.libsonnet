@@ -22,6 +22,54 @@
       // Object annotations
       annotations: {},
 
+      autoscaling: {
+        enabled: false,
+        minReplicas: 3,
+        maxReplicas: 6,
+        metrics: [{
+          type: 'ContainerResource',
+          containerResource: {
+            name: 'cpu',
+            container: s.name,
+            target: {
+              type: 'Utilization',
+              averageUtilization: 80,
+            },
+          },
+        }],
+        behavior: {
+          // This matches the default HPA behavior
+          // https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#default-behavior
+          scaleDown: {
+            selectPolicy: 'Min',
+            stabilizationWindowSeconds: 300,
+            policies: [
+              {
+                type: 'Percent',
+                value: 100,
+                periodSeconds: 15,
+              },
+            ],
+          },
+          scaleUp: {
+            selectPolicy: 'Max',
+            stabilizationWindowSeconds: 0,
+            policies: [
+              {
+                type: 'Percent',
+                value: 100,
+                periodSeconds: 15,
+              },
+              {
+                type: 'Pods',
+                value: 4,
+                periodSeconds: 15,
+              },
+            ],
+          },
+        },
+      },
+
       // Pod Labels
       podLabels: {
         team: error 'podLabels.team must be set',
