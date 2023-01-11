@@ -229,7 +229,7 @@ local letsbuildServiceDeployment(
 
   local s = self,
 
-  local hpa = k.autoscaling.v1.horizontalPodAutoscaler,
+  local hpa = k.autoscaling.v2beta2.horizontalPodAutoscaler,
   local deployment = k.apps.v1.deployment,
 
   deployment:
@@ -275,15 +275,21 @@ local letsbuildServiceDeployment(
   service: if withService || withIngress then serviceSpec(s.deployment, dc) else {},
 
   hpa: (
-    if std.objectHas(dc, 'autoscaling')
+    if dc.autoscaling.enabled
     then
       hpa.new(dc.name)
       + hpa.spec.scaleTargetRef.withKind(s.deployment.kind)
       + hpa.spec.scaleTargetRef.withName(s.deployment.metadata.name)
-      // Override because this parameter is missing from the library
-      + { spec+: { scaleTargetRef+: { apiVersion: s.deployment.apiVersion } } }
+      + hpa.spec.scaleTargetRef.withApiVersion(s.deployment.apiVersion)
       + hpa.spec.withMaxReplicas(dc.autoscaling.maxReplicas)
       + hpa.spec.withMinReplicas(dc.autoscaling.minReplicas)
+      + hpa.spec.withMetrics(dc.autoscaling.metrics)
+      + hpa.spec.behavior.scaleDown.withPolicies(dc.autoscaling.behavior.scaleDown.policies)
+      + hpa.spec.behavior.scaleDown.withSelectPolicy(dc.autoscaling.behavior.scaleDown.selectPolicy)
+      + hpa.spec.behavior.scaleDown.withStabilizationWindowSeconds(dc.autoscaling.behavior.scaleDown.stabilizationWindowSeconds)
+      + hpa.spec.behavior.scaleUp.withPolicies(dc.autoscaling.behavior.scaleUp.policies)
+      + hpa.spec.behavior.scaleUp.withSelectPolicy(dc.autoscaling.behavior.scaleUp.selectPolicy)
+      + hpa.spec.behavior.scaleUp.withStabilizationWindowSeconds(dc.autoscaling.behavior.scaleUp.stabilizationWindowSeconds)
   ),
 
   ingress: if withIngress then ingressSpec(ic, s.service),
@@ -303,7 +309,7 @@ local letsbuildServiceStatefulSet(statefulsetConfig, withService=true) = {
 
   local s = self,
 
-  local hpa = k.autoscaling.v1.horizontalPodAutoscaler,
+  local hpa = k.autoscaling.v1beta2.horizontalPodAutoscaler,
   local statefulSet = k.apps.v1.statefulSet,
 
   statefulSet:
@@ -328,15 +334,21 @@ local letsbuildServiceStatefulSet(statefulsetConfig, withService=true) = {
   service: if withService then serviceSpec(s.statefulSet, sts) else {},
 
   hpa: (
-    if std.objectHas(sts, 'autoscaling')
+    if sts.autoscaling.enabled
     then
       hpa.new(sts.name)
       + hpa.spec.scaleTargetRef.withKind(s.statefulSet.kind)
       + hpa.spec.scaleTargetRef.withName(s.statefulSet.metadata.name)
-      // Override because this parameter is missing from the library
-      + { spec+: { scaleTargetRef+: { apiVersion: s.statefulSet.apiVersion } } }
+      + hpa.spec.scaleTargetRef.withApiVersion(s.statefulSet.apiVersion)
       + hpa.spec.withMaxReplicas(sts.autoscaling.maxReplicas)
       + hpa.spec.withMinReplicas(sts.autoscaling.minReplicas)
+      + hpa.spec.withMetrics(sts.autoscaling.metrics)
+      + hpa.spec.behavior.scaleDown.withPolicies(sts.autoscaling.behavior.scaleDown.policies)
+      + hpa.spec.behavior.scaleDown.withSelectPolicy(sts.autoscaling.behavior.scaleDown.selectPolicy)
+      + hpa.spec.behavior.scaleDown.withStabilizationWindowSeconds(sts.autoscaling.behavior.scaleDown.stabilizationWindowSeconds)
+      + hpa.spec.behavior.scaleUp.withPolicies(sts.autoscaling.behavior.scaleUp.policies)
+      + hpa.spec.behavior.scaleUp.withSelectPolicy(sts.autoscaling.behavior.scaleUp.selectPolicy)
+      + hpa.spec.behavior.scaleUp.withStabilizationWindowSeconds(sts.autoscaling.behavior.scaleUp.stabilizationWindowSeconds)
   ),
 };
 

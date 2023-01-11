@@ -13,7 +13,7 @@ local lbInitContainers = import 'kubernetes/init-containers.libsonnet';
       },
 
       // Autoscaling
-      autoscaling: {
+      autoscaling+: {
         minReplicas: 1,
         maxReplicas: 3,
       },
