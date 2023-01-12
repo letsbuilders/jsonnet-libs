@@ -296,7 +296,22 @@ local letsbuildServiceDeployment(
 
   publicApiIngress: if withPublicApi then publicApiIngressSpec(publicApiConfig),
 
-  aproplanApiIngress: if withAproplanApi then publicApiIngressSpec(aproplanApiConfig),
+  aproplanApiIngress: if withAproplanApi then publicApiIngressSpec(aproplanApiConfig) + {
+    metadata+: { name: 'aproplan-%s' % super.name },
+    spec+: {
+      rules: [
+        rule {
+          http+: {
+            paths: [
+              path { backend+: { service+: { name: 'aproplan-gateway' } } }
+              for path in super.paths
+            ],
+          },
+        }
+        for rule in super.rules
+      ],
+    },
+  },
 };
 
 local letsbuildServiceStatefulSet(statefulsetConfig, withService=true) = {
