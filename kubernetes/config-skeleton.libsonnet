@@ -27,10 +27,9 @@
         minReplicas: 3,
         maxReplicas: 6,
         metrics: [{
-          type: 'ContainerResource',
-          containerResource: {
+          type: 'Resource',
+          resource: {
             name: 'cpu',
-            container: s.name,
             target: {
               type: 'Utilization',
               averageUtilization: 80,
