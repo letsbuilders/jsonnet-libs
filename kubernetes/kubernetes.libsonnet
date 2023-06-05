@@ -229,7 +229,7 @@ local letsbuildServiceDeployment(
 
   local s = self,
 
-  local hpa = k.autoscaling.v2beta2.horizontalPodAutoscaler,
+  local hpa = k.autoscaling.v2.horizontalPodAutoscaler,
   local deployment = k.apps.v1.deployment,
 
   deployment:
