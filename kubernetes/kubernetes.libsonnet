@@ -261,6 +261,12 @@ local letsbuildServiceDeployment(
     // Node Affinity
     + deployment.spec.template.spec.affinity.nodeAffinity.withPreferredDuringSchedulingIgnoredDuringExecution(dc.affinity.preferred)
     + deployment.spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.withNodeSelectorTerms(dc.affinity.required.nodeSelectorTerms)
+    // Pode Affinity
+    + deployment.spec.template.spec.affinity.podAffinity.withPreferredDuringSchedulingIgnoredDuringExecution(dc.podeAffinity.preferred)
+    + deployment.spec.template.spec.affinity.podAffinity.withRequiredDuringSchedulingIgnoredDuringExecution(dc.podeAffinity.required)
+    // Pode Anti-Affinity
+    + deployment.spec.template.spec.affinity.podAntiAffinity.withPreferredDuringSchedulingIgnoredDuringExecution(dc.podeAntiAffinity.preferred)
+    + deployment.spec.template.spec.affinity.podAntiAffinity.withRequiredDuringSchedulingIgnoredDuringExecution(dc.podeAntiAffinity.required)
     
     // Pode Affinity
 

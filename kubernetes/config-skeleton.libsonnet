@@ -131,6 +131,80 @@
         },
       },
 
+      // Pode Affinity
+      podeAffinity: {
+        preferred: [
+          {
+            weight: '1',
+            podAffinityTerm: {
+              labelSelector: {
+                matchExpressions: [
+                  {
+                    key: 'another-node-label-key',
+                    operator: 'In',
+                    values: [
+                        'another-node-label-value',
+                    ],
+                  },
+                ],
+              }, 
+            },
+          },
+        ],
+        required: [
+          {
+          labelSelector: {
+            matchExpressions: [
+              {
+                key: 'security',
+                operator: 'In',
+                values: [
+                  'S1',
+                  ],
+                },
+              ],
+            },
+          },
+        ],
+      },
+
+      // Pode Anti-Affinity
+      podeAntiAffinity: {
+        preferred: [
+          {
+            weight: '1',
+            podAffinityTerm: {
+              labelSelector: {
+                matchExpressions: [
+                  {
+                    key: 'another-node-label-key',
+                    operator: 'In',
+                    values: [
+                        'another-node-label-value',
+                    ],
+                  },
+                ],
+              }, 
+            },
+          },
+        ],
+        required: [
+          {
+          labelSelector: {
+            matchExpressions: [
+              {
+                key: 'security',
+                operator: 'In',
+                values: [
+                  'S1',
+                  ],
+                },
+              ],
+            },
+          },
+        ],
+      },
+
       // Main application containrt
       container: {
         local cont = self,
