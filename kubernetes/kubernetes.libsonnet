@@ -258,6 +258,12 @@ local letsbuildServiceDeployment(
     + deployment.spec.withRevisionHistoryLimit(
       if std.objectHas(dc, 'revisionHistoryLimit') then dc.revisionHistoryLimit else 3
     )
+    // Node Affinity
+    + deployment.spec.template.spec.affinity.nodeAffinity.withPreferredDuringSchedulingIgnoredDuringExecution(dc.affinity.preferred)
+    + deployment.spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.withNodeSelectorTerms(dc.affinity.required.nodeSelectorTerms)
+    
+    // Pode Affinity
+
     + deployment.spec.template.spec.withNodeSelector({
       'kubernetes.io/os': 'linux',
       'letsbuild.com/purpose': 'worker',

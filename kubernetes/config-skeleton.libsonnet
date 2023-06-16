@@ -93,6 +93,43 @@
         }
         else {}
       ),
+      
+      // Node Affinity
+      affinity: {
+        preferred: [
+          {
+            weight: '1',
+            preference: {
+              matchExpressions: [
+                {
+                  key: 'another-node-label-key',
+                  operator: 'In',
+                  values: [
+                      'another-node-label-value',
+                  ],
+                },
+              ],
+            },
+          },
+        ],
+        required: {
+          nodeSelectorTerms: [
+            {
+              matchExpressions: [
+                {
+                  key: 'app',
+                  operator: 'in',
+                  values: [
+                    {
+                      frontend: 'frontend',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      },
 
       // Main application containrt
       container: {
