@@ -258,17 +258,16 @@ local letsbuildServiceDeployment(
     + deployment.spec.withRevisionHistoryLimit(
       if std.objectHas(dc, 'revisionHistoryLimit') then dc.revisionHistoryLimit else 3
     )
+
     // Node Affinity
-    + deployment.spec.template.spec.affinity.nodeAffinity.withPreferredDuringSchedulingIgnoredDuringExecution(dc.affinity.preferred)
-    + deployment.spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.withNodeSelectorTerms(dc.affinity.required.nodeSelectorTerms)
+    + (if dc.nodeAffinity.enabledPreffered then deployment.spec.template.spec.affinity.nodeAffinity.withPreferredDuringSchedulingIgnoredDuringExecution(dc.nodeAffinity.preferred) else {})
+    + (if dc.nodeAffinity.enabledReguired then deployment.spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.withNodeSelectorTerms(dc.nodeAffinity.required.nodeSelectorTerms) else {})
     // Pode Affinity
-    + deployment.spec.template.spec.affinity.podAffinity.withPreferredDuringSchedulingIgnoredDuringExecution(dc.podeAffinity.preferred)
-    + deployment.spec.template.spec.affinity.podAffinity.withRequiredDuringSchedulingIgnoredDuringExecution(dc.podeAffinity.required)
+    + (if dc.podAffinity.enabledPreffered then deployment.spec.template.spec.affinity.podAffinity.withPreferredDuringSchedulingIgnoredDuringExecution(dc.podAffinity.preferred) else {})
+    + (if dc.podAffinity.enabledReguired then deployment.spec.template.spec.affinity.podAffinity.withRequiredDuringSchedulingIgnoredDuringExecution(dc.podAffinity.required) else {})
     // Pode Anti-Affinity
-    + deployment.spec.template.spec.affinity.podAntiAffinity.withPreferredDuringSchedulingIgnoredDuringExecution(dc.podeAntiAffinity.preferred)
-    + deployment.spec.template.spec.affinity.podAntiAffinity.withRequiredDuringSchedulingIgnoredDuringExecution(dc.podeAntiAffinity.required)
-    
-    // Pode Affinity
+    + (if dc.podAntiAffinity.enabledPreffered then deployment.spec.template.spec.affinity.podAntiAffinity.withPreferredDuringSchedulingIgnoredDuringExecution(dc.podAffinity.preferred) else {})
+    + (if dc.podAntiAffinity.enabledReguired then deployment.spec.template.spec.affinity.podAntiAffinity.withRequiredDuringSchedulingIgnoredDuringExecution(dc.podAffinity.required) else {})
 
     + deployment.spec.template.spec.withNodeSelector({
       'kubernetes.io/os': 'linux',

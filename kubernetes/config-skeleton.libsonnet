@@ -95,7 +95,9 @@
       ),
       
       // Node Affinity
-      affinity: {
+      nodeAffinity: {
+        enabledPreffered: false,
+        enabledReguired: false,
         preferred: [
           {
             weight: '1',
@@ -131,8 +133,10 @@
         },
       },
 
-      // Pode Affinity
-      podeAffinity: {
+      // Pod Affinity
+      podAffinity: {
+        enabledPreffered: false,
+        enabledReguired: false,
         preferred: [
           {
             weight: '1',
@@ -168,8 +172,10 @@
         ],
       },
 
-      // Pode Anti-Affinity
-      podeAntiAffinity: {
+      // Pod Anti-Affinity
+      podAntiAffinity: {
+        enabledPreffered: false,
+        enabledReguired: false,
         preferred: [
           {
             weight: '1',
