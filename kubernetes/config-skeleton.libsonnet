@@ -69,6 +69,9 @@
         },
       },
 
+      // Pod Tolerations
+      podTolerantions: [],
+      
       // Pod Labels
       podLabels: {
         team: error 'podLabels.team must be set',
