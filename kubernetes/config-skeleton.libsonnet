@@ -100,7 +100,7 @@
       // Node Affinity
       nodeAffinity: {
         enabledPreffered: false,
-        enabledReguired: false,
+        enabledRequired: false,
         preferred: [],
         required: {
           nodeSelectorTerms: [],
@@ -110,7 +110,7 @@
       // Pod Affinity
       podAffinity: {
         enabledPreffered: false,
-        enabledReguired: false,
+        enabledRequired: false,
         preferred: [],
         required: [],
       },
@@ -118,7 +118,7 @@
       // Pod Anti-Affinity
       podAntiAffinity: {
         enabledPreffered: true,
-        enabledReguired: false,
+        enabledRequired: false,
         preferred: [
           {
             weight: '100',
