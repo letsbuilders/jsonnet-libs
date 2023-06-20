@@ -123,7 +123,7 @@
           {
             weight: '100',
             podAffinityTerm: {
-              topologyKey: '',
+              topologyKey: 'kubernetes.io/hostname',
               labelSelector: {
                 matchExpressions: [
                   {
