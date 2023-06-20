@@ -123,6 +123,7 @@
           {
             weight: '100',
             podAffinityTerm: {
+              topologyKey: {},
               labelSelector: {
                 matchExpressions: [
                   {
