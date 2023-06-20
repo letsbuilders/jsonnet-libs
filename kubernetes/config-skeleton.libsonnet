@@ -101,38 +101,9 @@
       nodeAffinity: {
         enabledPreffered: false,
         enabledReguired: false,
-        preferred: [
-          {
-            weight: '1',
-            preference: {
-              matchExpressions: [
-                {
-                  key: 'another-node-label-key',
-                  operator: 'In',
-                  values: [
-                      'another-node-label-value',
-                  ],
-                },
-              ],
-            },
-          },
-        ],
+        preferred: [],
         required: {
-          nodeSelectorTerms: [
-            {
-              matchExpressions: [
-                {
-                  key: 'app',
-                  operator: 'in',
-                  values: [
-                    {
-                      frontend: 'frontend',
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
+          nodeSelectorTerms: [],
         },
       },
 
@@ -140,56 +111,25 @@
       podAffinity: {
         enabledPreffered: false,
         enabledReguired: false,
-        preferred: [
-          {
-            weight: '1',
-            podAffinityTerm: {
-              labelSelector: {
-                matchExpressions: [
-                  {
-                    key: 'another-node-label-key',
-                    operator: 'In',
-                    values: [
-                        'another-node-label-value',
-                    ],
-                  },
-                ],
-              }, 
-            },
-          },
-        ],
-        required: [
-          {
-          labelSelector: {
-            matchExpressions: [
-              {
-                key: 'security',
-                operator: 'In',
-                values: [
-                  'S1',
-                  ],
-                },
-              ],
-            },
-          },
-        ],
+        preferred: [],
+        required: [],
       },
 
       // Pod Anti-Affinity
       podAntiAffinity: {
-        enabledPreffered: false,
+        enabledPreffered: true,
         enabledReguired: false,
         preferred: [
           {
-            weight: '1',
+            weight: '100',
             podAffinityTerm: {
               labelSelector: {
                 matchExpressions: [
                   {
-                    key: 'another-node-label-key',
+                    key: 'app.kubernetes.io/name',
                     operator: 'In',
                     values: [
-                        'another-node-label-value',
+                        common.name,
                     ],
                   },
                 ],
@@ -197,21 +137,7 @@
             },
           },
         ],
-        required: [
-          {
-          labelSelector: {
-            matchExpressions: [
-              {
-                key: 'security',
-                operator: 'In',
-                values: [
-                  'S1',
-                  ],
-                },
-              ],
-            },
-          },
-        ],
+        required: [],
       },
 
       // Main application containrt

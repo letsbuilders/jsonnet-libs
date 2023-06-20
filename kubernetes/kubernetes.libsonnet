@@ -268,8 +268,8 @@ local letsbuildServiceDeployment(
     + (if dc.podAffinity.enabledPreffered then deployment.spec.template.spec.affinity.podAffinity.withPreferredDuringSchedulingIgnoredDuringExecution(dc.podAffinity.preferred) else {})
     + (if dc.podAffinity.enabledReguired then deployment.spec.template.spec.affinity.podAffinity.withRequiredDuringSchedulingIgnoredDuringExecution(dc.podAffinity.required) else {})
     // Pode Anti-Affinity
-    + (if dc.podAntiAffinity.enabledPreffered then deployment.spec.template.spec.affinity.podAntiAffinity.withPreferredDuringSchedulingIgnoredDuringExecution(dc.podAffinity.preferred) else {})
-    + (if dc.podAntiAffinity.enabledReguired then deployment.spec.template.spec.affinity.podAntiAffinity.withRequiredDuringSchedulingIgnoredDuringExecution(dc.podAffinity.required) else {})
+    + (if dc.podAntiAffinity.enabledPreffered then deployment.spec.template.spec.affinity.podAntiAffinity.withPreferredDuringSchedulingIgnoredDuringExecution(dc.podAntiAffinity.preferred) else {})
+    + (if dc.podAntiAffinity.enabledReguired then deployment.spec.template.spec.affinity.podAntiAffinity.withRequiredDuringSchedulingIgnoredDuringExecution(dc.podAntiAffinity.required) else {})
 
     + deployment.spec.template.spec.withNodeSelector({
       'kubernetes.io/os': 'linux',
