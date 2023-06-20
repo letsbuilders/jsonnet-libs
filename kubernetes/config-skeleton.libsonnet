@@ -121,7 +121,7 @@
         enabledRequired: false,
         preferred: [
           {
-            weight: '100',
+            weight: 100,
             podAffinityTerm: {
               topologyKey: 'kubernetes.io/hostname',
               labelSelector: {
