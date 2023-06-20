@@ -355,7 +355,7 @@ local letsbuildServiceStatefulSet(statefulsetConfig, withService=true) = {
     if sts.autoscaling.enabled
     then
       hpa.new(sts.name)
-      + hpa.metadata.withAnnotations(dc.autoscaling.annotations)
+      + hpa.metadata.withAnnotations(sts.autoscaling.annotations)
       + hpa.spec.scaleTargetRef.withKind(s.statefulSet.kind)
       + hpa.spec.scaleTargetRef.withName(s.statefulSet.metadata.name)
       + hpa.spec.scaleTargetRef.withApiVersion(s.statefulSet.apiVersion)
