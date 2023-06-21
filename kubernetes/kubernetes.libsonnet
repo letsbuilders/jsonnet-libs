@@ -326,7 +326,7 @@ local letsbuildServiceStatefulSet(statefulsetConfig, withService=true) = {
 
   local s = self,
 
-  local hpa = k.autoscaling.v1beta2.horizontalPodAutoscaler,
+  local hpa = k.autoscaling.v2.horizontalPodAutoscaler,
   local statefulSet = k.apps.v1.statefulSet,
 
   statefulSet:
