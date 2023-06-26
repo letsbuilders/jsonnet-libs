@@ -96,6 +96,50 @@
         }
         else {}
       ),
+      
+      // Node Affinity
+      nodeAffinity: {
+        enabledPreffered: false,
+        enabledRequired: false,
+        preferred: [],
+        required: {
+          nodeSelectorTerms: [],
+        },
+      },
+
+      // Pod Affinity
+      podAffinity: {
+        enabledPreffered: false,
+        enabledRequired: false,
+        preferred: [],
+        required: [],
+      },
+
+      // Pod Anti-Affinity
+      podAntiAffinity: {
+        enabledPreffered: true,
+        enabledRequired: false,
+        preferred: [
+          {
+            weight: 100,
+            podAffinityTerm: {
+              topologyKey: 'kubernetes.io/hostname',
+              labelSelector: {
+                matchExpressions: [
+                  {
+                    key: 'app.kubernetes.io/name',
+                    operator: 'In',
+                    values: [
+                        common.name,
+                    ],
+                  },
+                ],
+              }, 
+            },
+          },
+        ],
+        required: [],
+      },
 
       // Main application containrt
       container: {
