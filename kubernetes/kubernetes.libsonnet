@@ -264,10 +264,10 @@ local letsbuildServiceDeployment(
     // Node Affinity
     + (if dc.nodeAffinity.enabledPreffered then deployment.spec.template.spec.affinity.nodeAffinity.withPreferredDuringSchedulingIgnoredDuringExecution(dc.nodeAffinity.preferred) else {})
     + (if dc.nodeAffinity.enabledRequired then deployment.spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.withNodeSelectorTerms(dc.nodeAffinity.required.nodeSelectorTerms) else {})
-    // Pode Affinity
+    // Pod Affinity
     + (if dc.podAffinity.enabledPreffered then deployment.spec.template.spec.affinity.podAffinity.withPreferredDuringSchedulingIgnoredDuringExecution(dc.podAffinity.preferred) else {})
     + (if dc.podAffinity.enabledRequired then deployment.spec.template.spec.affinity.podAffinity.withRequiredDuringSchedulingIgnoredDuringExecution(dc.podAffinity.required) else {})
-    // Pode Anti-Affinity
+    // Pod Anti-Affinity
     + (if dc.podAntiAffinity.enabledPreffered then deployment.spec.template.spec.affinity.podAntiAffinity.withPreferredDuringSchedulingIgnoredDuringExecution(dc.podAntiAffinity.preferred) else {})
     + (if dc.podAntiAffinity.enabledRequired then deployment.spec.template.spec.affinity.podAntiAffinity.withRequiredDuringSchedulingIgnoredDuringExecution(dc.podAntiAffinity.required) else {})
 
