@@ -24,8 +24,8 @@
 
       autoscaling: {
         annotations: {
-            'argocd.argoproj.io/sync-wave': '2',
-          },
+          'argocd.argoproj.io/sync-wave': '2',
+        },
         enabled: false,
         minReplicas: 3,
         maxReplicas: 6,
@@ -74,7 +74,7 @@
 
       // Pod Tolerations
       podTolerantions: [],
-      
+
       // Pod Labels
       podLabels: {
         team: error 'podLabels.team must be set',
