@@ -271,11 +271,7 @@ local letsbuildServiceDeployment(
     + (if dc.podAntiAffinity.enabledPreffered then deployment.spec.template.spec.affinity.podAntiAffinity.withPreferredDuringSchedulingIgnoredDuringExecution(dc.podAntiAffinity.preferred) else {})
     + (if dc.podAntiAffinity.enabledRequired then deployment.spec.template.spec.affinity.podAntiAffinity.withRequiredDuringSchedulingIgnoredDuringExecution(dc.podAntiAffinity.required) else {})
 
-    + deployment.spec.template.spec.withNodeSelector({
-      'kubernetes.io/os': 'linux',
-      'letsbuild.com/purpose': 'worker',
-      'kubernetes.io/arch': 'amd64',
-    })
+    + deployment.spec.template.spec.withNodeSelector(dc.nodeSelector)
     + (
       if std.length(withServiceAccountObject) > 0
       then
@@ -347,11 +343,7 @@ local letsbuildServiceStatefulSet(statefulsetConfig, withService=true) = {
     // Object metadata
     + objectMetadata(statefulSet, sts)
     // Nodeselector
-    + statefulSet.spec.template.spec.withNodeSelector({
-      'kubernetes.io/os': 'linux',
-      'letsbuild.com/purpose': 'worker',
-      'kubernetes.io/arch': 'amd64',
-    })
+    + statefulSet.spec.template.spec.withNodeSelector(sts.nodeSelector)
     + statefulSet.spec.template.spec.withInitContainers(initContainers)
     // Setting revisionHistoryLimit to clean up unused ReplicaSets
     + statefulSet.spec.withRevisionHistoryLimit(
@@ -389,11 +381,7 @@ local letsbuildJob(config, withServiceAccountObject={}) = {
   job:
     job.new()
     + job.metadata.withName(config.name)
-    + job.spec.template.spec.withNodeSelector({
-      'kubernetes.io/os': 'linux',
-      'letsbuild.com/purpose': 'worker',
-      'kubernetes.io/arch': 'amd64',
-    })
+    + job.spec.template.spec.withNodeSelector(config.nodeSelector)
     + objectMetadata(job, config)
     + job.spec.withBackoffLimit(0)
     + job.spec.withTtlSecondsAfterFinished(180)
