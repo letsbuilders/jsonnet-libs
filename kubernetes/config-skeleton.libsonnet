@@ -71,7 +71,14 @@
 
       // Pod Tolerations
       podTolerantions: [],
-      
+
+      // nodeSelector for Pods
+      nodeSelector: {
+        'kubernetes.io/os': 'linux',
+        'letsbuild.com/purpose': 'worker',
+        'kubernetes.io/arch': 'amd64',
+      },
+
       // Pod Labels
       podLabels: {
         team: error 'podLabels.team must be set',
@@ -96,7 +103,7 @@
         }
         else {}
       ),
-      
+
       // Node Affinity
       nodeAffinity: {
         enabledPreffered: false,
@@ -130,11 +137,11 @@
                     key: 'app.kubernetes.io/name',
                     operator: 'In',
                     values: [
-                        common.name,
+                      common.name,
                     ],
                   },
                 ],
-              }, 
+              },
             },
           },
         ],
