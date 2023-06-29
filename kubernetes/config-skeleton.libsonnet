@@ -75,6 +75,13 @@
       // Pod Tolerations
       podTolerantions: [],
 
+      // nodeSelector for Pods
+      nodeSelector: {
+        'kubernetes.io/os': 'linux',
+        'letsbuild.com/purpose': 'worker',
+        'kubernetes.io/arch': 'amd64',
+      },
+
       // Pod Labels
       podLabels: {
         team: error 'podLabels.team must be set',
@@ -99,6 +106,50 @@
         }
         else {}
       ),
+
+      // Node Affinity
+      nodeAffinity: {
+        enabledPreffered: false,
+        enabledRequired: false,
+        preferred: [],
+        required: {
+          nodeSelectorTerms: [],
+        },
+      },
+
+      // Pod Affinity
+      podAffinity: {
+        enabledPreffered: false,
+        enabledRequired: false,
+        preferred: [],
+        required: [],
+      },
+
+      // Pod Anti-Affinity
+      podAntiAffinity: {
+        enabledPreffered: true,
+        enabledRequired: false,
+        preferred: [
+          {
+            weight: 100,
+            podAffinityTerm: {
+              topologyKey: 'kubernetes.io/hostname',
+              labelSelector: {
+                matchExpressions: [
+                  {
+                    key: 'app.kubernetes.io/name',
+                    operator: 'In',
+                    values: [
+                      common.name,
+                    ],
+                  },
+                ],
+              },
+            },
+          },
+        ],
+        required: [],
+      },
 
       // Main application containrt
       container: {

@@ -260,11 +260,18 @@ local letsbuildServiceDeployment(
     + deployment.spec.withRevisionHistoryLimit(
       if std.objectHas(dc, 'revisionHistoryLimit') then dc.revisionHistoryLimit else 3
     )
-    + deployment.spec.template.spec.withNodeSelector({
-      'kubernetes.io/os': 'linux',
-      'letsbuild.com/purpose': 'worker',
-      'kubernetes.io/arch': 'amd64',
-    })
+
+    // Node Affinity
+    + (if dc.nodeAffinity.enabledPreffered then deployment.spec.template.spec.affinity.nodeAffinity.withPreferredDuringSchedulingIgnoredDuringExecution(dc.nodeAffinity.preferred) else {})
+    + (if dc.nodeAffinity.enabledRequired then deployment.spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.withNodeSelectorTerms(dc.nodeAffinity.required.nodeSelectorTerms) else {})
+    // Pod Affinity
+    + (if dc.podAffinity.enabledPreffered then deployment.spec.template.spec.affinity.podAffinity.withPreferredDuringSchedulingIgnoredDuringExecution(dc.podAffinity.preferred) else {})
+    + (if dc.podAffinity.enabledRequired then deployment.spec.template.spec.affinity.podAffinity.withRequiredDuringSchedulingIgnoredDuringExecution(dc.podAffinity.required) else {})
+    // Pod Anti-Affinity
+    + (if dc.podAntiAffinity.enabledPreffered then deployment.spec.template.spec.affinity.podAntiAffinity.withPreferredDuringSchedulingIgnoredDuringExecution(dc.podAntiAffinity.preferred) else {})
+    + (if dc.podAntiAffinity.enabledRequired then deployment.spec.template.spec.affinity.podAntiAffinity.withRequiredDuringSchedulingIgnoredDuringExecution(dc.podAntiAffinity.required) else {})
+
+    + deployment.spec.template.spec.withNodeSelector(dc.nodeSelector)
     + (
       if std.length(withServiceAccountObject) > 0
       then
@@ -327,7 +334,7 @@ local letsbuildServiceStatefulSet(statefulsetConfig, withService=true) = {
 
   local s = self,
 
-  local hpa = k.autoscaling.v1beta2.horizontalPodAutoscaler,
+  local hpa = k.autoscaling.v2.horizontalPodAutoscaler,
   local statefulSet = k.apps.v1.statefulSet,
 
   statefulSet:
@@ -337,11 +344,7 @@ local letsbuildServiceStatefulSet(statefulsetConfig, withService=true) = {
     // Object metadata
     + objectMetadata(statefulSet, sts)
     // Nodeselector
-    + statefulSet.spec.template.spec.withNodeSelector({
-      'kubernetes.io/os': 'linux',
-      'letsbuild.com/purpose': 'worker',
-      'kubernetes.io/arch': 'amd64',
-    })
+    + statefulSet.spec.template.spec.withNodeSelector(sts.nodeSelector)
     + statefulSet.spec.template.spec.withInitContainers(initContainers)
     // Setting revisionHistoryLimit to clean up unused ReplicaSets
     + statefulSet.spec.withRevisionHistoryLimit(
@@ -380,11 +383,7 @@ local letsbuildJob(config, withServiceAccountObject={}) = {
   job:
     job.new()
     + job.metadata.withName(config.name)
-    + job.spec.template.spec.withNodeSelector({
-      'kubernetes.io/os': 'linux',
-      'letsbuild.com/purpose': 'worker',
-      'kubernetes.io/arch': 'amd64',
-    })
+    + job.spec.template.spec.withNodeSelector(config.nodeSelector)
     + objectMetadata(job, config)
     + job.spec.withBackoffLimit(0)
     + job.spec.withTtlSecondsAfterFinished(180)
