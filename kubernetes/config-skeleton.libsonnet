@@ -23,6 +23,9 @@
       annotations: {},
 
       autoscaling: {
+        annotations: {
+          'argocd.argoproj.io/sync-wave': '2',
+        },
         enabled: false,
         minReplicas: 3,
         maxReplicas: 6,
