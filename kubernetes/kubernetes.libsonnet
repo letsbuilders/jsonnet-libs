@@ -79,6 +79,7 @@ local containerSpecs(containersConfig) = [
 
   container.new(cont.name, cont.image)
   + container.withCommand(if std.objectHas(cont, 'command') then cont.command else [])
+  + container.withArgs(if std.objectHas(cont, 'args') then cont.args else [])
   + container.withEnv(envVars + extraEnvVars)
   + container.withEnvFrom(if std.objectHas(cont, 'envFrom') then cont.envFrom else [])
   // The 'IfNotPresent' image pull policy will pull the image only if not present: https://kubernetes.io/docs/concepts/containers/images/
