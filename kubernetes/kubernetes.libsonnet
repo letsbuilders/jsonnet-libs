@@ -256,7 +256,7 @@ local letsbuildServiceDeployment(
     // Init containers
     + deployment.spec.template.spec.withInitContainers(initContainers)
     // Pod Tolerations
-    + deployment.spec.template.spec.withTolerations(dc.podTolerantions)
+    + deployment.spec.template.spec.withTolerations(dc.podTolerations)
     // Setting revisionHistoryLimit to clean up unused ReplicaSets
     + deployment.spec.withRevisionHistoryLimit(
       if std.objectHas(dc, 'revisionHistoryLimit') then dc.revisionHistoryLimit else 3
