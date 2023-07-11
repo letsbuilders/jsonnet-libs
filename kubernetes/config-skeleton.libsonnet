@@ -73,7 +73,7 @@
       },
 
       // Pod Tolerations
-      podTolerantions: [],
+      podTolerations: [],
 
       // nodeSelector for Pods
       nodeSelector: {
