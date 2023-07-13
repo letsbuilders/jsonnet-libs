@@ -88,11 +88,15 @@ local containerSpecs(containersConfig) = [
     // Single port
     if std.objectHas(cont, 'port')
     then
-      [port.new(cont.name, cont.port)]
+      [
+      port.new(cont.name, cont.port)
+      + (if std.objectHas(cont, 'protocol') then port.withProtocol(cont.protocol) else {})
+      ]
     else if std.objectHas(cont, 'ports')
     then
       [
         port.new(contPort.name, contPort.port)
+        + (if std.objectHas(contPort, 'protocol') then port.withProtocol(contPort.protocol) else {})
         for contPort in cont.ports
       ]
     else
