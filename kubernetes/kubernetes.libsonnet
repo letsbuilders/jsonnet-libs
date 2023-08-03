@@ -350,6 +350,7 @@ local letsbuildServiceStatefulSet(statefulsetConfig, withService=true) = {
     + objectMetadata(statefulSet, sts)
     // Nodeselector
     + statefulSet.spec.template.spec.withNodeSelector(sts.nodeSelector)
+    + statefulSet.spec.template.spec.withTolerations(sts.podTolerations)
     + statefulSet.spec.template.spec.withInitContainers(initContainers)
     // Setting revisionHistoryLimit to clean up unused ReplicaSets
     + statefulSet.spec.withRevisionHistoryLimit(
@@ -392,6 +393,7 @@ local letsbuildJob(config, withServiceAccountObject={}) = {
     + objectMetadata(job, config)
     + job.spec.withBackoffLimit(0)
     + job.spec.withTtlSecondsAfterFinished(180)
+    + job.spec.template.spec.withTolerations(config.podTolerations)
     + job.spec.template.spec.withRestartPolicy('Never')
     + job.spec.template.spec.withContainers(containers)
     + job.spec.template.spec.withInitContainers(initContainers)
