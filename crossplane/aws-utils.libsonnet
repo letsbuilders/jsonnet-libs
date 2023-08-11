@@ -162,7 +162,6 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
       + (if std.length(c.aws.bucket.lifecycleRules) > 0 then bucket.mixin.spec.forProvider.lifecycleConfiguration.withRules(c.aws.bucket.lifecycleRules) else {}),
     bucketPolicy:
       bucketPolicy.new(name=s.bucketName)
-      + bucketPolicy.mixin.spec.withDeletionPolicy('Orphan')
       + bucketPolicy.mixin.spec.forProvider.withBucketName(s.bucketName)
       + bucketPolicy.mixin.spec.forProvider.withRegion(c.aws.region)
       + bucketPolicy.mixin.spec.forProvider.policy.withVersion('2012-10-17')
@@ -173,7 +172,6 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
   iamRole:: {
     role:
       role.new(s.roleName)
-      + role.mixin.spec.withDeletionPolicy('Orphan')
       + role.mixin.spec.forProvider.withAssumeRolePolicyDocument(std.manifestJsonEx(s.serviceAccountTrustRelationship, '  '))
       + role.mixin.spec.providerConfigRef.withName(c.crossplaneProvider),
   },
