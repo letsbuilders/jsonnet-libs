@@ -157,6 +157,13 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
       + bucket.mixin.spec.forProvider.withLocationConstraint(c.aws.region)
       + bucket.mixin.spec.forProvider.tagging.withTagSet(tagSets)
       + bucket.mixin.spec.forProvider.withAcl(c.aws.bucket.acl)
+      + {
+        spec+: {
+          forProvider+: {
+            objectOwnership: 'BucketOwnerPreferred',
+          },
+        },
+      }
       + (if c.aws.bucket.scan == true then bucket.mixin.spec.forProvider.notificationConfiguration.withQueueConfigurations(s.notificationConfiguration.queueConfigurations)
          else {})
       + (if std.length(c.aws.bucket.lifecycleRules) > 0 then bucket.mixin.spec.forProvider.lifecycleConfiguration.withRules(c.aws.bucket.lifecycleRules) else {}),
