@@ -1,4 +1,5 @@
-local k6(name, parallelism, extraEnv=[]) = {
+local k6(name, parallelism, extraEnv=[], cleanup=true, separate=false) = {
+    local cleanJobs = if cleanup then {cleanup: 'post'} else {},
     apiVersion: 'k6.io/v1alpha1',
     kind: 'K6',
     metadata: {
@@ -6,6 +7,7 @@ local k6(name, parallelism, extraEnv=[]) = {
     },
     spec: {
       parallelism: parallelism,
+      separate: separate,
       script: {
         configMap: {
           name: 'k6-test',
@@ -20,7 +22,8 @@ local k6(name, parallelism, extraEnv=[]) = {
             value: 'k6-statsd.k6-operator-system.svc.cluster.local:8125',
           },
         ] + extraEnv,
-      },
+      }
+      + cleanJobs
     },
 };
 
