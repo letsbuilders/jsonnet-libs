@@ -1,4 +1,4 @@
-local k6(name, parallelism) = {
+local k6(name, parallelism, extraEnv=[]) = {
     apiVersion: 'k6.io/v1alpha1',
     kind: 'K6',
     metadata: {
@@ -19,7 +19,7 @@ local k6(name, parallelism) = {
             name: 'K6_STATSD_ADDR',
             value: 'k6-statsd.k6-operator-system.svc.cluster.local:8125',
           },
-        ],
+        ] + extraEnv,
       },
     },
 };
