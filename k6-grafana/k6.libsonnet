@@ -1,11 +1,11 @@
-local k6(name) = {
+local k6(name, parallelism) = {
     apiVersion: 'k6.io/v1alpha1',
     kind: 'K6',
     metadata: {
-      name: 'k6-sample',
+      name: 'k6-%s' % name,
     },
     spec: {
-      parallelism: 2,
+      parallelism: parallelism,
       script: {
         configMap: {
           name: 'k6-test',
@@ -25,13 +25,14 @@ local k6(name) = {
 };
 
 local config(script) = {
-  local scriptData = importstr script,
   apiVersion: 'v1',
     kind: 'ConfigMap',
     metadata: {
       name: 'k6-test',
     },
-    data: scriptData,
+    data: {
+      'test.js': script,
+    },
 };
 
 {
