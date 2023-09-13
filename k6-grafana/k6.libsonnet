@@ -22,9 +22,9 @@ local k6(name, parallelism, extraEnv=[], cleanup=true, separate=false) = {
             value: 'k6-statsd.k6-operator-system.svc.cluster.local:8125',
           },
         ] + extraEnv,
-      }
-      + cleanJobs
-    },
+      },
+    }
+    + cleanJobs
 };
 
 local config(script) = {
