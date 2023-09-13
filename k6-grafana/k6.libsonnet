@@ -1,5 +1,4 @@
 local k6(name, parallelism, extraEnv=[], cleanup=true, separate=false) = {
-    local cleanJobs = if cleanup then {cleanup: 'post'} else {},
     apiVersion: 'k6.io/v1alpha1',
     kind: 'K6',
     metadata: {
@@ -23,8 +22,8 @@ local k6(name, parallelism, extraEnv=[], cleanup=true, separate=false) = {
           },
         ] + extraEnv,
       },
+      [if cleanup then 'cleanup' else null]: 'post'
     }
-    + cleanJobs
 };
 
 local config(script) = {
