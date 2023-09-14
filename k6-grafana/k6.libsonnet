@@ -15,12 +15,24 @@ local k6(name, parallelism, extraEnv=[], cleanup=true, separate=false) = {
       },
       arguments: '--out statsd',
       runner: {
+        metadata: {
+          annotations: {
+            'sidecar.istio.io/inject': 'false',
+          },
+        },
         env: [
           {
             name: 'K6_STATSD_ADDR',
             value: 'k6-statsd.k6-operator-system.svc.cluster.local:8125',
           },
         ] + extraEnv,
+      },
+      starter: {
+        metadata: {
+          annotations: {
+            'sidecar.istio.io/inject': 'false',
+          },
+        },
       },
       [if cleanup then 'cleanup' else null]: 'post'
     }
