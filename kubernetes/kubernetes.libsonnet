@@ -240,7 +240,7 @@ local letsbuildServiceDeployment(
   deployment:
     deployment.new(dc.name, replicas=1, containers=containers)
     // Hide replicas to avoid conflicts with HPA
-    + (if std.objectHas(dc, 'autoscaling') then { spec+: { replicas:: null } } else {})
+    + (if dc.autoscaling.enabled == true then { spec+: { replicas:: null } } else {})
     + objectMetadata(deployment, dc)
     // Pod topology spread constrains
     // https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/
@@ -345,7 +345,7 @@ local letsbuildServiceStatefulSet(statefulsetConfig, withService=true) = {
   statefulSet:
     statefulSet.new(sts.name, replicas=1, containers=containers)
     // Hide replicas to avoid conflicts with HPA
-    + (if std.objectHas(sts, 'autoscaling') then { spec+: { replicas:: null } } else {})
+    + (if sts.autoscaling.enabled == true then { spec+: { replicas:: null } } else {})
     // Object metadata
     + objectMetadata(statefulSet, sts)
     // Nodeselector
