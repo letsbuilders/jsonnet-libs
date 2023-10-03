@@ -1,15 +1,16 @@
-local host(name, username, address, secretName, secretKey, username) = {
+local host(name, username, address='', secretName, secretKey, endpointKey='') = {
   apiVersion: 'postgres.letsbuild.com/v1alpha1',
   kind: 'Host',
   metadata: {
     name: name,
   },
   spec: {
-    address: address,
+    [if address != '' then 'address']: address,
     username: username,
     secretRef: {
       name: secretName,
       key: secretKey,
+      [if endpointKey != '' then 'endpointKey']: endpointKey,
     },
   },
 };
