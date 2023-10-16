@@ -39,7 +39,7 @@ local database(databaseName, hostName, dropOnDeletion=true, name='', extensions=
   },
 };
 
-local user(username, databaseName, priv, secretName='', name='', schemaCreation=false) = {
+local user(username, databaseName, priv, secretName='', name='', schemaCreation='') = {
 
   local defaultName = '%(database)s-%(user)s' % {
     database: databaseName,
@@ -63,7 +63,7 @@ local user(username, databaseName, priv, secretName='', name='', schemaCreation=
       databaseRef: {
         name: databaseName
       },
-      [if schemaCreation == true then 'schemaCreation']: true,
+      [if schemaCreation != '' then 'schemaCreation']: schemaCreation,
       priv: priv,
     },
   },
