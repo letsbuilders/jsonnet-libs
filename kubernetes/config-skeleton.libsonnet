@@ -151,6 +151,9 @@
         required: [],
       },
 
+      // Volume mounts functions:
+      volumes: [],
+
       // Main application containrt
       container: {
         local cont = self,
