@@ -237,6 +237,38 @@ local letsbuildServiceDeployment(
   local hpa = k.autoscaling.v2.horizontalPodAutoscaler,
   local deployment = k.apps.v1.deployment,
 
+  subPath(volume)::
+    (if std.objectHas(volume, 'subPath') then k.core.v1.volumeMount.withSubPath(volume.subPath) else {}),
+  volumeMounts(volumes)::
+    local container = k.core.v1.container,
+          volumeMount = k.core.v1.volumeMount,
+          volume = k.core.v1.volume;
+    local addMounts(c) = c + container.withVolumeMountsMixin([
+      volumeMount.new(m.name, m.path) + s.subPath(m)
+      for m in volumes
+    ]);
+
+    deployment.mapContainers(addMounts)
+    + deployment.mixin.spec.template.spec.withVolumesMixin(std.prune(
+      [
+        if std.objectHas(m, 'configMap') then volume.fromConfigMap(m.name, m.configMap.name, if std.objectHas(m.configMap, 'items') then m.configMap.items else []) else null
+        for m in volumes
+      ] +
+      [
+        if std.objectHas(m, 'emptyDir') then volume.fromEmptyDir(m.name, m.emptyDir) else null
+        for m in volumes
+      ] +
+      [
+        if std.objectHas(m, 'secret') then volume.fromSecret(m.name, m.secret.secretName)
+                                           + (if std.objectHas(m.secret, 'defaultMode') then volume.secret.withDefaultMode(m.secret.defaultMode) else {}) else null
+        for m in volumes
+      ] +
+      [
+        if std.objectHas(m, 'claim') then volume.fromPersistentVolumeClaim(m.name, m.claim.claimName) else null
+        for m in volumes
+      ]
+    )),
+
   deployment:
     deployment.new(dc.name, replicas=1, containers=containers)
     // Hide replicas to avoid conflicts with HPA
@@ -265,7 +297,8 @@ local letsbuildServiceDeployment(
     + deployment.spec.withRevisionHistoryLimit(
       if std.objectHas(dc, 'revisionHistoryLimit') then dc.revisionHistoryLimit else 3
     )
-
+    // Volume mount functions in deployments:
+    + s.volumeMounts(dc.volumes)
     // Node Affinity
     + (if dc.nodeAffinity.enabledPreffered then deployment.spec.template.spec.affinity.nodeAffinity.withPreferredDuringSchedulingIgnoredDuringExecution(dc.nodeAffinity.preferred) else {})
     + (if dc.nodeAffinity.enabledRequired then deployment.spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.withNodeSelectorTerms(dc.nodeAffinity.required.nodeSelectorTerms) else {})
