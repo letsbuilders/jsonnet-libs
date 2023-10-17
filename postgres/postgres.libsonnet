@@ -69,8 +69,64 @@ local user(username, databaseName, priv, secretName='', name='', schemaCreation=
   },
 };
 
+local publication(name, databaseName, replicaUser, tables=[], secretName='') = {
+
+  local defaultName = '%(database)s-%(user)s' % {
+    database: databaseName,
+    user: name,
+  },
+
+  apiVersion: 'postgres.letsbuild.com/v1alpha1',
+  kind: 'Publication',
+  metadata: {
+    name: if name == '' then defaultName else name,
+    annotations: {
+      'argocd.argoproj.io/sync-wave': '-1',
+    },
+  },
+  spec: {
+    publicationName: name,
+    writeConnectionSecretToRef: {
+      name: if secretName == '' then defaultName else secretName,
+    },
+    databaseRef: {
+      name: databaseName
+    },
+    replicaUser: replicaUser,
+    [if tables != [] then 'tables']: tables,
+  },
+};
+
+local subscription(name, databaseName, publication) = {
+
+  local defaultName = '%(database)s-%(user)s' % {
+    database: databaseName,
+    user: name,
+  },
+
+  apiVersion: 'postgres.letsbuild.com/v1alpha1',
+  kind: 'Subscription',
+  metadata: {
+    name: if name == '' then defaultName else name,
+    annotations: {
+      'argocd.argoproj.io/sync-wave': '-1',
+    },
+  },
+  spec: {
+    subscriptionName: name,
+    databaseRef: {
+      name: databaseName
+    },
+    publicationRef: {
+      name: publication,
+    },
+  },
+};
+
 {
   host:: host,
   database:: database,
   user:: user,
+  publication:: publication,
+  subscription:: subscription,
 }
