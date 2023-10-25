@@ -165,6 +165,20 @@
 
         imagePullPolicy: 'IfNotPresent',
 
+        resourcesLimits:
+          local limit(value) =
+            // extract the unit from the value
+            local unit = std.slice(value, std.length(value) - 2, std.length(value), 1);
+            // return 2x increased value
+            2 * std.parseInt(std.rstripChars(value, unit)) + unit;
+
+          if std.objectHas(cont, 'resourcesRequests')
+          then {
+            cpu: null,
+            mem: if std.objectHas(cont.resourcesRequests, 'mem') then limit(cont.resourcesRequests.mem) else null,
+          }
+          else { cpu: null, mem: null },
+
         envVars: {
           ENVIRONMENT: s.namespace,
         },
@@ -187,7 +201,6 @@
 
       sidecarContainers: [],
       initContainers: [],
-
     },
 
     deployment: s.common {
@@ -208,7 +221,6 @@
         'sidecar.istio.io/proxyCPU':: null,
         'sidecar.istio.io/proxyMemory':: null,
       },
-
     },
     statefulSet: s.common {
       // overrides specific to statefulsets
