@@ -33,6 +33,45 @@ local lbInitContainers = (import 'github.com/letsbuilders/jsonnet-libs/kubernete
             cpu: '100m',
             mem: '100Mi',
           },
+
+      // Example of usage of volumeMounts:
+      // Add in config.deployment section next values:
+        volumes: [
+          {
+            name: 'configmap-volume',
+            path: '/configmap',
+            configMap: {
+              name: 'my-cm',
+            },
+          },
+          {
+            name: 'emptydir-volume',
+            path: '/emptydir',
+            subPath: '/emptydir/emptydir',
+            emptyDir: {
+              sizeLimit: '500Mi',
+            },
+          },
+          {
+          name: 'pvc-volume',
+          path: '/pvc',
+          readOnly: false,
+          subPath: '/pvc/pvc.txt',
+          claim: {
+            claimName: 'my-pvc'
+          }
+        },
+          {
+            name: 'secret-volume',
+            path: '/secret',
+            subPath: '/secret/secret.txt',
+            secret: {
+              secretName: 'my-secret',
+              defaultMode: 256,
+            },
+          },
+        ],
+
           port: 80,
         },
         {
@@ -56,7 +95,12 @@ local lbInitContainers = (import 'github.com/letsbuilders/jsonnet-libs/kubernete
       withService=true,
       withIngress=true,
       ingressConfig=c.ingress
-    )
+    ),
+  configmap:
+    configMap.new('testName')
+    + configMap.withData({ 'testKey': (
+      (importstr 'configmap.json')
+    )})
 }
 
 
