@@ -29,6 +29,8 @@ function(namespace='test') {
   assert std.isObject(self.data.serviceDeployment),
   assert std.isObject(self.data.serviceDeployment.deployment),
   assert std.isObject(self.data.serviceDeployment.deployment.spec.template.spec),
+  assert std.equals(self.data.serviceDeployment.deployment.spec.template.spec.containers[0].resources.limits.memory, '200Mi'),
+  assert std.equals(self.data.serviceDeployment.deployment.spec.template.spec.containers[0].resources.requests.memory, '100Mi'),
 
 
 
