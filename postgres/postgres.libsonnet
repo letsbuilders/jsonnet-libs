@@ -39,7 +39,7 @@ local database(databaseName, hostName, dropOnDeletion=true, name='', extensions=
   },
 };
 
-local user(username, databaseName, priv, secretName='', name='', schemaCreation=false) = {
+local user(username, databaseName, priv, secretName='', name='', dbType='', schemaCreation=false) = {
 
   local defaultName = '%(database)s-%(user)s' % {
     database: databaseName,
@@ -56,6 +56,7 @@ local user(username, databaseName, priv, secretName='', name='', schemaCreation=
   },
   spec: {
     username: username,
+    [if dbType != '' then 'dbType']: 'rds',
     writeConnectionSecretToRef: {
       name: if secretName == '' then defaultName else secretName,
     },
