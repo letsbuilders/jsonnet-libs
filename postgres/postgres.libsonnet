@@ -97,7 +97,7 @@ local publication(name, databaseName, replicaUser, tables=[], secretName='', pub
   },
 };
 
-local subscription(name, slotName, databaseName, publication) = {
+local subscription(name, slotName, databaseName, publication, subscriptionName='',) = {
 
   local defaultName = '%(database)s-%(user)s' % {
     database: databaseName,
@@ -113,7 +113,7 @@ local subscription(name, slotName, databaseName, publication) = {
     },
   },
   spec: {
-    subscriptionName: name,
+    subscriptionName: if subscriptionName == '' then name else subscriptionName,
     slotName: slotName,
     databaseRef: {
       name: databaseName
