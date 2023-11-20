@@ -69,7 +69,7 @@ local user(username, databaseName, priv, secretName='', name='', schemaCreation=
   },
 };
 
-local publication(name, databaseName, replicaUser, tables=[], secretName='') = {
+local publication(name, databaseName, replicaUser, tables=[], secretName='', publicationName='',) = {
 
   local defaultName = '%(database)s-%(user)s' % {
     database: databaseName,
@@ -85,7 +85,7 @@ local publication(name, databaseName, replicaUser, tables=[], secretName='') = {
     },
   },
   spec: {
-    publicationName: name,
+    publicationName: if publicationName == '' then name else publicationName,
     writeConnectionSecretToRef: {
       name: if secretName == '' then defaultName else secretName,
     },
