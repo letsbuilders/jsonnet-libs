@@ -362,13 +362,15 @@ local letsbuildServiceDeployment(
   },
 };
 
-local letsbuildServiceStatefulSet(statefulsetConfig, withService=true) = {
+local letsbuildServiceStatefulSet(statefulsetConfig, withService=true, withIngress=false, ingressConfig={}) = {
   local sts = statefulsetConfig,
   local mainContainer = containerSpecs([sts.container]),
   local sidecars = containerSpecs(sts.sidecarContainers),
   local initContainers = if std.objectHas(sts, 'initContainers') then containerSpecs(sts.initContainers) else [],
 
   local containers = mainContainer + sidecars,
+
+  local ic = ingressConfig,
 
   local s = self,
 
@@ -392,6 +394,8 @@ local letsbuildServiceStatefulSet(statefulsetConfig, withService=true) = {
     + statefulSet.spec.withServiceName(sts.name),
 
   service: if withService then serviceSpec(s.statefulSet, sts) else {},
+
+  ingress: if withIngress then ingressSpec(ic, s.service),
 
   hpa: (
     if sts.autoscaling.enabled
