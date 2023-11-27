@@ -56,7 +56,20 @@ local podMonitor(name, podLabels, namespace, metricsPortName, metricsPath='/metr
   },
 };
 
+local rules(name, rules, labels={ prometheus: 'operations' }) = {
+  apiVersion: 'monitoring.coreos.com/v1',
+  kind: 'PrometheusRule',
+  metadata: {
+    labels: labels,
+    name: name,
+  },
+  spec: {
+    groups: rules,
+  },
+};
+
 {
   serviceMonitor:: serviceMonitor,
   podMonitor:: podMonitor,
+  rules:: rules,
 }
