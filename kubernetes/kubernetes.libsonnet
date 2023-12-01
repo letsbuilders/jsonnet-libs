@@ -89,8 +89,8 @@ local containerSpecs(containersConfig) = [
     if std.objectHas(cont, 'port')
     then
       [
-      port.new(cont.name, cont.port)
-      + (if std.objectHas(cont, 'protocol') then port.withProtocol(cont.protocol) else {})
+        port.new(cont.name, cont.port)
+        + (if std.objectHas(cont, 'protocol') then port.withProtocol(cont.protocol) else {}),
       ]
     else if std.objectHas(cont, 'ports')
     then
@@ -249,7 +249,7 @@ local letsbuildServiceDeployment(
     ]);
 
     deployment.mapContainers(addMounts)
-    + deployment.mixin.spec.template.spec.withVolumesMixin(std.prune(
+    + deployment.mixin.spec.template.spec.withVolumesMixin(std.set(std.prune(
       [
         if std.objectHas(m, 'configMap') then volume.fromConfigMap(m.name, m.configMap.name, if std.objectHas(m.configMap, 'items') then m.configMap.items else []) else null
         for m in volumes
@@ -267,7 +267,7 @@ local letsbuildServiceDeployment(
         if std.objectHas(m, 'claim') then volume.fromPersistentVolumeClaim(m.name, m.claim.claimName) else null
         for m in volumes
       ]
-    )),
+    ), keyF=function(x) x.name)),
 
   deployment:
     deployment.new(dc.name, replicas=1, containers=containers)
