@@ -210,7 +210,7 @@ local ingressSpec(config, serviceObject) =
     for host in config.hosts
   ])
   + ingress.spec.withTls([
-    { hosts: config.hosts, secretName: 'base-certificate' },
+    { hosts: config.hosts, secretName: if std.objectHas(config, 'secretName') then config.secretName else 'base-certificate' },
   ]);
 
 local letsbuildServiceDeployment(
