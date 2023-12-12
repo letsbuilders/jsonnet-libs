@@ -236,7 +236,7 @@ local letsbuildServiceDeployment(
 
   local hpa = k.autoscaling.v2.horizontalPodAutoscaler,
   local deployment = k.apps.v1.deployment,
-  local pdp = k.policy.v1.podDisruptionBudget
+  local pdp = k.policy.v1.podDisruptionBudget,
 
   subPath(volume)::
     (if std.objectHas(volume, 'subPath') then k.core.v1.volumeMount.withSubPath(volume.subPath) else {}),
@@ -385,7 +385,7 @@ local letsbuildServiceStatefulSet(statefulsetConfig, withService=true, withIngre
 
   local hpa = k.autoscaling.v2.horizontalPodAutoscaler,
   local statefulSet = k.apps.v1.statefulSet,
-  local pdp = k.policy.v1.podDisruptionBudget
+  local pdp = k.policy.v1.podDisruptionBudget,
 
   statefulSet:
     statefulSet.new(sts.name, replicas=1, containers=containers)
