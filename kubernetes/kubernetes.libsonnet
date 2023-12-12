@@ -236,6 +236,7 @@ local letsbuildServiceDeployment(
 
   local hpa = k.autoscaling.v2.horizontalPodAutoscaler,
   local deployment = k.apps.v1.deployment,
+  local pdp = k.policy.v1.podDisruptionBudget,
 
   subPath(volume)::
     (if std.objectHas(volume, 'subPath') then k.core.v1.volumeMount.withSubPath(volume.subPath) else {}),
@@ -340,6 +341,14 @@ local letsbuildServiceDeployment(
       + hpa.spec.behavior.scaleUp.withStabilizationWindowSeconds(dc.autoscaling.behavior.scaleUp.stabilizationWindowSeconds)
   ),
 
+  pdp: (
+    if dc.autoscaling.enabled
+    then
+    pdp.new(dc.name)
+      + pdp.spec.withMaxUnavailable(if dc.autoscaling.minReplicas > 1 then dc.autoscaling.minReplicas - 1 else 1)
+      + pdp.spec.selector.withMatchLabels(dc.labels)
+  ),
+
   ingress: if withIngress then ingressSpec(ic, s.service),
 
   publicApiIngress: if withPublicApi then publicApiIngressSpec(publicApiConfig),
@@ -376,6 +385,7 @@ local letsbuildServiceStatefulSet(statefulsetConfig, withService=true, withIngre
 
   local hpa = k.autoscaling.v2.horizontalPodAutoscaler,
   local statefulSet = k.apps.v1.statefulSet,
+  local pdp = k.policy.v1.podDisruptionBudget,
 
   statefulSet:
     statefulSet.new(sts.name, replicas=1, containers=containers)
@@ -415,6 +425,14 @@ local letsbuildServiceStatefulSet(statefulsetConfig, withService=true, withIngre
       + hpa.spec.behavior.scaleUp.withSelectPolicy(sts.autoscaling.behavior.scaleUp.selectPolicy)
       + hpa.spec.behavior.scaleUp.withStabilizationWindowSeconds(sts.autoscaling.behavior.scaleUp.stabilizationWindowSeconds)
   ),
+
+  pdp: (
+    if sts.autoscaling.enabled
+    then
+    pdp.new(sts.name)
+      + pdp.spec.withMaxUnavailable(if sts.autoscaling.minReplicas > 1 then sts.autoscaling.minReplicas - 1 else 1)
+      + pdp.spec.selector.withMatchLabels(sts.labels)
+  )
 };
 
 local letsbuildJob(config, withServiceAccountObject={}) = {
