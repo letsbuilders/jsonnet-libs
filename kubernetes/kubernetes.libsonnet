@@ -401,7 +401,16 @@ local letsbuildServiceStatefulSet(statefulsetConfig, withService=true, withIngre
     + statefulSet.spec.withRevisionHistoryLimit(
       if std.objectHas(sts, 'revisionHistoryLimit') then sts.revisionHistoryLimit else 3
     )
-    + statefulSet.spec.withServiceName(sts.name),
+    + statefulSet.spec.withServiceName(sts.name)
+    // Node Affinity
+    + (if sts.nodeAffinity.enabledPreffered then statefulSet.spec.template.spec.affinity.nodeAffinity.withPreferredDuringSchedulingIgnoredDuringExecution(sts.nodeAffinity.preferred) else {})
+    + (if sts.nodeAffinity.enabledRequired then statefulSet.spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.withNodeSelectorTerms(sts.nodeAffinity.required.nodeSelectorTerms) else {})
+    // Pod Affinity
+    + (if sts.podAffinity.enabledPreffered then statefulSet.spec.template.spec.affinity.podAffinity.withPreferredDuringSchedulingIgnoredDuringExecution(sts.podAffinity.preferred) else {})
+    + (if sts.podAffinity.enabledRequired then statefulSet.spec.template.spec.affinity.podAffinity.withRequiredDuringSchedulingIgnoredDuringExecution(sts.podAffinity.required) else {})
+    // Pod Anti-Affinity
+    + (if sts.podAntiAffinity.enabledPreffered then statefulSet.spec.template.spec.affinity.podAntiAffinity.withPreferredDuringSchedulingIgnoredDuringExecution(sts.podAntiAffinity.preferred) else {})
+    + (if sts.podAntiAffinity.enabledRequired then statefulSet.spec.template.spec.affinity.podAntiAffinity.withRequiredDuringSchedulingIgnoredDuringExecution(sts.podAntiAffinity.required) else {}),
 
   service: if withService then serviceSpec(s.statefulSet, sts) else {},
 
