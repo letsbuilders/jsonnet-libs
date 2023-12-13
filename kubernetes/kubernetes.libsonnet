@@ -345,7 +345,7 @@ local letsbuildServiceDeployment(
     if dc.autoscaling.enabled
     then
     pdp.new(dc.name)
-      + pdp.spec.withMaxUnavailable(if dc.autoscaling.minReplicas > 1 then dc.autoscaling.minReplicas - 1 else 1)
+      + pdp.spec.withMinAvailable(if dc.autoscaling.minReplicas > 1 then dc.autoscaling.minReplicas - 1 else 0)
       + pdp.spec.selector.withMatchLabels(dc.labels)
   ),
 
@@ -439,7 +439,7 @@ local letsbuildServiceStatefulSet(statefulsetConfig, withService=true, withIngre
     if sts.autoscaling.enabled
     then
     pdp.new(sts.name)
-      + pdp.spec.withMaxUnavailable(if sts.autoscaling.minReplicas > 1 then sts.autoscaling.minReplicas - 1 else 1)
+      + pdp.spec.withMinAvailable(if sts.autoscaling.minReplicas > 1 then sts.autoscaling.minReplicas - 1 else 0)
       + pdp.spec.selector.withMatchLabels(sts.labels)
   )
 };
