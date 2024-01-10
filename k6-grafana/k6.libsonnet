@@ -25,6 +25,10 @@ local k6(name, parallelism, extraEnv=[], cleanup=true, separate=false) = {
             name: 'K6_STATSD_ADDR',
             value: 'k6-statsd.k6-operator-system.svc.cluster.local:8125',
           },
+          {
+            name: 'K6_STATSD_ENABLE_TAGS',
+            value: 'true',
+          },
         ] + extraEnv,
       },
       starter: {
