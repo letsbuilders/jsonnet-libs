@@ -42,7 +42,7 @@ local k6(name, parallelism, extraEnv=[], cleanup=true, separate=false) = {
     }
 };
 
-local config(script, name) = {
+local config(script, name, defaultOptions='') = {
   apiVersion: 'v1',
     kind: 'ConfigMap',
     metadata: {
@@ -50,6 +50,7 @@ local config(script, name) = {
     },
     data: {
       'test.js': script,
+      [if defaultOptions != '' then 'options.json']: defaultOptions,
     },
 };
 
