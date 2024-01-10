@@ -1,6 +1,6 @@
 local k6(name, parallelism, extraEnv=[], cleanup=true, separate=false) = {
     apiVersion: 'k6.io/v1alpha1',
-    kind: 'K6',
+    kind: 'TestRun',
     metadata: {
       name: 'k6-%s' % name,
     },
@@ -9,7 +9,7 @@ local k6(name, parallelism, extraEnv=[], cleanup=true, separate=false) = {
       separate: separate,
       script: {
         configMap: {
-          name: 'k6-test',
+          name: 'k6-%s' % name,
           file: 'test.js',
         },
       },
@@ -38,11 +38,11 @@ local k6(name, parallelism, extraEnv=[], cleanup=true, separate=false) = {
     }
 };
 
-local config(script) = {
+local config(script, name) = {
   apiVersion: 'v1',
     kind: 'ConfigMap',
     metadata: {
-      name: 'k6-test',
+      name: 'k6-%s' % name,
     },
     data: {
       'test.js': script,
