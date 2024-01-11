@@ -1,6 +1,6 @@
 local k6(name, parallelism, extraEnv=[], cleanup=true, separate=false) = {
     apiVersion: 'k6.io/v1alpha1',
-    kind: 'K6',
+    kind: 'TestRun',
     metadata: {
       name: 'k6-%s' % name,
     },
@@ -9,7 +9,7 @@ local k6(name, parallelism, extraEnv=[], cleanup=true, separate=false) = {
       separate: separate,
       script: {
         configMap: {
-          name: 'k6-test',
+          name: 'k6-%s' % name,
           file: 'test.js',
         },
       },
@@ -25,6 +25,10 @@ local k6(name, parallelism, extraEnv=[], cleanup=true, separate=false) = {
             name: 'K6_STATSD_ADDR',
             value: 'k6-statsd.k6-operator-system.svc.cluster.local:8125',
           },
+          {
+            name: 'K6_STATSD_ENABLE_TAGS',
+            value: 'true',
+          },
         ] + extraEnv,
       },
       starter: {
@@ -38,14 +42,15 @@ local k6(name, parallelism, extraEnv=[], cleanup=true, separate=false) = {
     }
 };
 
-local config(script) = {
+local config(script, name, defaultOptions='') = {
   apiVersion: 'v1',
     kind: 'ConfigMap',
     metadata: {
-      name: 'k6-test',
+      name: 'k6-%s' % name,
     },
     data: {
       'test.js': script,
+      [if defaultOptions != '' then 'options.json']: defaultOptions,
     },
 };
 
