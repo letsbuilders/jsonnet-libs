@@ -195,7 +195,21 @@
             name: 'OTEL_RESOURCE_ATTRIBUTES',
             value: 'k8s.pod.ip=$(POD_IP),container=%s' % cont.name,
           },
-        ],
+        ]
+        + (
+          // configure .NET garbage collector if ASPNETCORE_ENVIRONMENT is set
+          // set the GCHeapHardLimit to 80% of requested memory
+          if std.objectHas(cont.envVars, 'ASPNETCORE_ENVIRONMENT') && std.objectHas(cont, 'resourcesRequests') && std.objectHas(cont.resourcesRequests, 'mem') then [{
+            name: 'DOTNET_GCHeapHardLimit',
+            value: '%x' % (0.8 * std.parseJson(
+              if std.endsWith(cont.resourcesRequests.mem, 'Mi') then
+                std.strReplace(cont.resourcesRequests.mem, 'Mi', '000000')
+              else if std.endsWith(cont.resourcesRequests.mem, 'Gi') then
+                std.strReplace(cont.resourcesRequests.mem, 'Gi', '000000000')
+            )),
+          }]
+          else  []
+        ),
         envFrom: [],
       },
 
