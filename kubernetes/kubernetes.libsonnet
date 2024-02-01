@@ -129,6 +129,11 @@ local containerSpecs(containersConfig) = [
     then { livenessProbe: cont.livenessProbe }
     else {}
   )
+  + (
+    if std.objectHas(cont, 'startupProbe')
+    then { startupProbe: cont.startupProbe }
+    else {}
+  )
   for cont in containersConfig
 ];
 
