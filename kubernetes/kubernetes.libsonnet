@@ -382,7 +382,7 @@ local letsbuildServiceDeployment(
   },
 };
 
-local letsbuildServiceStatefulSet(statefulsetConfig, withService=true, withIngress=false, ingressConfig={}) = {
+local letsbuildServiceStatefulSet(statefulsetConfig, withService=true, withIngress=false, withKedaScaler=false, ingressConfig={}, kedaScalerStsConfig={}) = {
   local sts = statefulsetConfig,
   local mainContainer = containerSpecs([sts.container]),
   local sidecars = containerSpecs(sts.sidecarContainers),
@@ -397,6 +397,7 @@ local letsbuildServiceStatefulSet(statefulsetConfig, withService=true, withIngre
   local hpa = k.autoscaling.v2.horizontalPodAutoscaler,
   local statefulSet = k.apps.v1.statefulSet,
   local pdb = k.policy.v1.podDisruptionBudget,
+  local ks = kedaScalerStsConfig,
 
   statefulSet:
     statefulSet.new(sts.name, replicas=1, containers=containers)
@@ -445,6 +446,8 @@ local letsbuildServiceStatefulSet(statefulsetConfig, withService=true, withIngre
       + hpa.spec.behavior.scaleUp.withSelectPolicy(sts.autoscaling.behavior.scaleUp.selectPolicy)
       + hpa.spec.behavior.scaleUp.withStabilizationWindowSeconds(sts.autoscaling.behavior.scaleUp.stabilizationWindowSeconds)
   ),
+
+  keda: if withKedaScaler then keda.scaledObject(ks),
 
   pdb: (
     if sts.autoscaling.enabled

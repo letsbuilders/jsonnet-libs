@@ -300,5 +300,14 @@
       maxReplicaCount: 5,
       restoreToOriginalReplicaCount: false,
     },
+
+    kedaScalerStsConfig: s.kedaScalerConfig {
+      name: 'scaler-%s' % s.statefulSet.name,
+      scaleTarget: {
+        apiVersion: 'apps/v1',
+        kind: 'StatefulSet',
+        name: s.statefulSet.name,
+      },
+    },
   },
 }

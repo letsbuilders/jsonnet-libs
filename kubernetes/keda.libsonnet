@@ -1,4 +1,4 @@
-local metric_definition(type, queue, value, activationThreshold, server, authentication, useCachedMetrics, metricType) =
+local metricDefinition(type, queue, value, activationThreshold, server, authentication, useCachedMetrics, metricType) =
   {
     type: type,
     useCachedMetrics: useCachedMetrics,
@@ -36,7 +36,7 @@ local scaledObject(config) = {
       },
     },
     triggers: [
-      metric_definition(
+      metricDefinition(
         type=(if std.objectHas(trigerConfig, 'type') then trigerConfig.type else 'prometheus'),
         queue=trigerConfig.queue,
         value=std.toString(trigerConfig.value),
