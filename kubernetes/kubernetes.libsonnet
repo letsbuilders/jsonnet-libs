@@ -1,5 +1,6 @@
 local k = import 'github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet';
 local util = import 'github.com/grafana/jsonnet-libs/ksonnet-util/util.libsonnet';
+local keda = import 'keda.libsonnet';
 
 
 local objectMetadata(object, config) =
@@ -224,13 +225,16 @@ local letsbuildServiceDeployment(
   withIngress=false,
   withPublicApi=false,
   withAproplanApi=false,
+  withKedaScaler=false,
   withServiceAccountObject={},
   publicApiConfig={},
   aproplanApiConfig={},
-  ingressConfig={}
+  ingressConfig={},
+  kedaScalerConfig={}
       ) = {
   local dc = deploymentConfig,
   local ic = ingressConfig,
+  local ks = kedaScalerConfig,
   local mainContainer = containerSpecs([dc.container]),
   local sidecars = containerSpecs(dc.sidecarContainers),
   local initContainers = if std.objectHas(dc, 'initContainers') then containerSpecs(dc.initContainers) else [],
@@ -353,6 +357,8 @@ local letsbuildServiceDeployment(
       + pdb.spec.withMinAvailable(if dc.autoscaling.minReplicas > 1 then dc.autoscaling.minReplicas - 1 else 0)
       + pdb.spec.selector.withMatchLabels(dc.labels)
   ),
+
+  keda: if withKedaScaler then keda.scaledObject(ks),
 
   ingress: if withIngress then ingressSpec(ic, s.service),
 

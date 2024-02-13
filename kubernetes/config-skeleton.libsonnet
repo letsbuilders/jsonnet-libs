@@ -208,7 +208,7 @@
                 std.strReplace(cont.resourcesRequests.mem, 'Gi', '000000000')
             )),
           }]
-          else  []
+          else []
         ),
         envFrom: [],
       },
@@ -280,6 +280,25 @@
         'app.kubernetes.io/instance': 'aproplan-%s-%s' % [s.name, s.namespace],
         'app.kubernetes.io/part-of': 'aproplan',
       },
+    },
+    kedaScalerConfig: {
+      name: 'scaler-%s' % s.deployment.name,
+      trigerConfigs: [],
+      behavior: s.common.autoscaling.behavior,
+      fallback: {
+        failureThreshold: 3,
+        replicas: 2,
+      },
+      scaleTarget: {
+        apiVersion: 'apps/v1',
+        kind: 'Deployment',
+        name: s.deployment.name,
+      },
+      pollingInterval: 30,
+      cooldownPeriod: 300,
+      minReplicaCount: 1,
+      maxReplicaCount: 5,
+      restoreToOriginalReplicaCount: false,
     },
   },
 }
