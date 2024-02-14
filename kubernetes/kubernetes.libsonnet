@@ -225,16 +225,13 @@ local letsbuildServiceDeployment(
   withIngress=false,
   withPublicApi=false,
   withAproplanApi=false,
-  withKedaScaler=false,
   withServiceAccountObject={},
   publicApiConfig={},
   aproplanApiConfig={},
   ingressConfig={},
-  kedaScalerConfig={}
       ) = {
   local dc = deploymentConfig,
   local ic = ingressConfig,
-  local ks = kedaScalerConfig,
   local mainContainer = containerSpecs([dc.container]),
   local sidecars = containerSpecs(dc.sidecarContainers),
   local initContainers = if std.objectHas(dc, 'initContainers') then containerSpecs(dc.initContainers) else [],
@@ -331,7 +328,7 @@ local letsbuildServiceDeployment(
   // We must generate a service if an ingress was requested
   service: if withService || withIngress then serviceSpec(s.deployment, dc) else {},
 
-  keda: (if withKedaScaler then keda.scaledObject(ks) else
+  keda: (if dc.autoscaling.enabledKeda then keda.scaledObject(dc.autoscaling) else
            {
              hpa: (
                if dc.autoscaling.enabled
@@ -383,7 +380,7 @@ local letsbuildServiceDeployment(
   },
 };
 
-local letsbuildServiceStatefulSet(statefulsetConfig, withService=true, withIngress=false, withKedaScaler=false, ingressConfig={}, kedaScalerStsConfig={}) = {
+local letsbuildServiceStatefulSet(statefulsetConfig, withService=true, withIngress=false, ingressConfig={}) = {
   local sts = statefulsetConfig,
   local mainContainer = containerSpecs([sts.container]),
   local sidecars = containerSpecs(sts.sidecarContainers),
@@ -398,7 +395,6 @@ local letsbuildServiceStatefulSet(statefulsetConfig, withService=true, withIngre
   local hpa = k.autoscaling.v2.horizontalPodAutoscaler,
   local statefulSet = k.apps.v1.statefulSet,
   local pdb = k.policy.v1.podDisruptionBudget,
-  local ks = kedaScalerStsConfig,
 
   statefulSet:
     statefulSet.new(sts.name, replicas=1, containers=containers)
@@ -429,7 +425,7 @@ local letsbuildServiceStatefulSet(statefulsetConfig, withService=true, withIngre
 
   ingress: if withIngress then ingressSpec(ic, s.service),
 
-  keda: (if withKedaScaler then keda.scaledObject(ks) else
+  keda: (if sts.autoscaling.enabledKeda then keda.scaledObject(sts.autoscaling) else
            {
              hpa: (
                if sts.autoscaling.enabled

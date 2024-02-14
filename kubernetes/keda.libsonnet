@@ -20,14 +20,14 @@ local scaledObject(config) = {
     name: config.name,
     annotations: {
       'scaledobject.keda.sh/transfer-hpa-ownership': 'true',
-    },
+    } + config.annotations,
   },
   spec: {
     scaleTargetRef: config.scaleTarget,
     pollingInterval: config.pollingInterval,
     cooldownPeriod: config.cooldownPeriod,
-    minReplicaCount: config.minReplicaCount,
-    maxReplicaCount: config.maxReplicaCount,
+    minReplicaCount: config.minReplicas,
+    maxReplicaCount: config.maxReplicas,
     fallback: config.fallback,
     advanced: {
       restoreToOriginalReplicaCount: config.restoreToOriginalReplicaCount,

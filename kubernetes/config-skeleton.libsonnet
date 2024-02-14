@@ -27,8 +27,24 @@
           'argocd.argoproj.io/sync-wave': '2',
         },
         enabled: false,
+        enabledKeda: false,
         minReplicas: 3,
         maxReplicas: 6,
+        name: 'scaler-%s' % common.name,
+        trigerConfigs: [],
+        fallback: {
+          failureThreshold: 3,
+          replicas: common.autoscaling.minReplicas,
+        },
+        scaleTarget: {
+          apiVersion: 'apps/v1',
+          kind: 'Deployment',
+          name: common.name,
+        },
+        pollingInterval: 30,
+        cooldownPeriod: 300,
+        restoreToOriginalReplicaCount: false,
+
         metrics: [{
           type: 'Resource',
           resource: {
@@ -239,6 +255,13 @@
     statefulSet: s.common {
       // overrides specific to statefulsets
       local sts = self,
+
+      autoscaling+: {
+        scaleTarget+: {
+          kind: 'StatefulSet',
+        },
+      },
+
     },
     ingress: {
       name: s.name,
@@ -279,34 +302,6 @@
         'app.kubernetes.io/name': 'aproplan-%s' % s.name,
         'app.kubernetes.io/instance': 'aproplan-%s-%s' % [s.name, s.namespace],
         'app.kubernetes.io/part-of': 'aproplan',
-      },
-    },
-    kedaScalerConfig: {
-      name: 'scaler-%s' % s.deployment.name,
-      trigerConfigs: [],
-      behavior: s.common.autoscaling.behavior,
-      fallback: {
-        failureThreshold: 3,
-        replicas: 2,
-      },
-      scaleTarget: {
-        apiVersion: 'apps/v1',
-        kind: 'Deployment',
-        name: s.deployment.name,
-      },
-      pollingInterval: 30,
-      cooldownPeriod: 300,
-      minReplicaCount: 1,
-      maxReplicaCount: 5,
-      restoreToOriginalReplicaCount: false,
-    },
-
-    kedaScalerStsConfig: s.kedaScalerConfig {
-      name: 'scaler-%s' % s.statefulSet.name,
-      scaleTarget: {
-        apiVersion: 'apps/v1',
-        kind: 'StatefulSet',
-        name: s.statefulSet.name,
       },
     },
   },
