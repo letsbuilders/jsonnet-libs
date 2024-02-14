@@ -44,7 +44,7 @@ local scaledObject(config) = {
         server=(if std.objectHas(trigerConfig, 'server') then trigerConfig.server else 'http://thanos-query.monitoring.svc.cluster.local:9090'),
         authentication=(if std.objectHas(trigerConfig, 'authentication') then trigerConfig.authentication else ''),
         useCachedMetrics=(if std.objectHas(trigerConfig, 'useCachedMetrics') then trigerConfig.useCachedMetrics else false),
-        metricType=(if std.objectHas(trigerConfig, 'metricType') then trigerConfig.metricType else 'Value'),
+        metricType=(if std.objectHas(trigerConfig, 'metricType') then trigerConfig.metricType else 'AverageValue'),
       )
       for trigerConfig in config.trigerConfigs
     ],
