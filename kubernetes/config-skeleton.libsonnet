@@ -86,7 +86,7 @@
           },
           pollingInterval: 30,
           cooldownPeriod: 300,
-          idleReplicaCount: '',
+          idleReplicaCount: null,
           restoreToOriginalReplicaCount: false,
         },
       },
