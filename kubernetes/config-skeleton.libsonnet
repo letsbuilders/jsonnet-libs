@@ -23,12 +23,19 @@
       annotations: {},
 
       autoscaling: {
+        enabled: false,
+        name: common.name,
         annotations: {
           'argocd.argoproj.io/sync-wave': '2',
         },
-        enabled: false,
+        scaleTarget: {
+          apiVersion: 'apps/v1',
+          kind: 'Deployment',
+          name: common.name,
+        },
         minReplicas: 3,
         maxReplicas: 6,
+
         metrics: [{
           type: 'Resource',
           resource: {
@@ -69,6 +76,17 @@
               },
             ],
           },
+        },
+        keda: {
+          enabled: false,
+          trigerConfigs: [],
+          fallback: {
+            failureThreshold: 3,
+            replicas: common.autoscaling.minReplicas,
+          },
+          pollingInterval: 30,
+          cooldownPeriod: 300,
+          restoreToOriginalReplicaCount: false,
         },
       },
 
@@ -183,33 +201,33 @@
           ENVIRONMENT: s.namespace,
         },
         extraEnvVars: [
-          {
-            name: 'HOST_IP',
-            valueFrom: { fieldRef: { fieldPath: 'status.hostIP' } },
-          },
-          {
-            name: 'POD_IP',
-            valueFrom: { fieldRef: { fieldPath: 'status.podIP' } },
-          },
-          {
-            name: 'OTEL_RESOURCE_ATTRIBUTES',
-            value: 'k8s.pod.ip=$(POD_IP),container=%s' % cont.name,
-          },
-        ]
-        + (
-          // configure .NET garbage collector if ASPNETCORE_ENVIRONMENT is set
-          // set the GCHeapHardLimit to 80% of requested memory
-          if std.objectHas(cont.envVars, 'ASPNETCORE_ENVIRONMENT') && std.objectHas(cont, 'resourcesRequests') && std.objectHas(cont.resourcesRequests, 'mem') then [{
-            name: 'DOTNET_GCHeapHardLimit',
-            value: '%x' % (0.8 * std.parseJson(
-              if std.endsWith(cont.resourcesRequests.mem, 'Mi') then
-                std.strReplace(cont.resourcesRequests.mem, 'Mi', '000000')
-              else if std.endsWith(cont.resourcesRequests.mem, 'Gi') then
-                std.strReplace(cont.resourcesRequests.mem, 'Gi', '000000000')
-            )),
-          }]
-          else  []
-        ),
+                        {
+                          name: 'HOST_IP',
+                          valueFrom: { fieldRef: { fieldPath: 'status.hostIP' } },
+                        },
+                        {
+                          name: 'POD_IP',
+                          valueFrom: { fieldRef: { fieldPath: 'status.podIP' } },
+                        },
+                        {
+                          name: 'OTEL_RESOURCE_ATTRIBUTES',
+                          value: 'k8s.pod.ip=$(POD_IP),container=%s' % cont.name,
+                        },
+                      ]
+                      + (
+                        // configure .NET garbage collector if ASPNETCORE_ENVIRONMENT is set
+                        // set the GCHeapHardLimit to 80% of requested memory
+                        if std.objectHas(cont.envVars, 'ASPNETCORE_ENVIRONMENT') && std.objectHas(cont, 'resourcesRequests') && std.objectHas(cont.resourcesRequests, 'mem') then [{
+                          name: 'DOTNET_GCHeapHardLimit',
+                          value: '%x' % (0.8 * std.parseJson(
+                                           if std.endsWith(cont.resourcesRequests.mem, 'Mi') then
+                                             std.strReplace(cont.resourcesRequests.mem, 'Mi', '000000')
+                                           else if std.endsWith(cont.resourcesRequests.mem, 'Gi') then
+                                             std.strReplace(cont.resourcesRequests.mem, 'Gi', '000000000')
+                                         )),
+                        }]
+                        else []
+                      ),
         envFrom: [],
       },
 
@@ -239,6 +257,13 @@
     statefulSet: s.common {
       // overrides specific to statefulsets
       local sts = self,
+
+      autoscaling+: {
+        scaleTarget+: {
+          kind: 'StatefulSet',
+        },
+      },
+
     },
     ingress: {
       name: s.name,
