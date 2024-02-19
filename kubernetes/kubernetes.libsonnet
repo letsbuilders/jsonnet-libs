@@ -331,7 +331,7 @@ local letsbuildServiceDeployment(
   autoscaling: (
     if dc.autoscaling.enabled then
       if dc.autoscaling.keda.enabled then
-        autoscaler.keda(dc.autoscaling.keda)
+        autoscaler.keda(dc.autoscaling)
       else
         autoscaler.horizontalPodAutoscaler(dc.autoscaling)
   ),
@@ -414,7 +414,7 @@ local letsbuildServiceStatefulSet(statefulsetConfig, withService=true, withIngre
   autoscaling: (
     if sts.autoscaling.enabled then
       if sts.autoscaling.keda.enabled then
-        autoscaler.keda(sts.autoscaling.keda)
+        autoscaler.keda(sts.autoscaling)
       else
         autoscaler.horizontalPodAutoscaler(sts.autoscaling)
   ),

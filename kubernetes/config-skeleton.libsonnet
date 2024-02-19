@@ -77,7 +77,7 @@
             ],
           },
         },
-        keda: common.autoscaling {
+        keda: {
           enabled: false,
           trigerConfigs: [],
           fallback: {

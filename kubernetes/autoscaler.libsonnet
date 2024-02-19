@@ -27,13 +27,13 @@ local keda(config) = {
   },
   spec: {
     scaleTargetRef: config.scaleTarget,
-    pollingInterval: config.pollingInterval,
-    cooldownPeriod: config.cooldownPeriod,
+    pollingInterval: config.keda.pollingInterval,
+    cooldownPeriod: config.keda.cooldownPeriod,
     minReplicaCount: config.minReplicas,
     maxReplicaCount: config.maxReplicas,
-    fallback: config.fallback,
+    fallback: config.keda.fallback,
     advanced: {
-      restoreToOriginalReplicaCount: config.restoreToOriginalReplicaCount,
+      restoreToOriginalReplicaCount: config.keda.restoreToOriginalReplicaCount,
       horizontalPodAutoscalerConfig: {
         behavior: config.behavior,
       },
@@ -49,7 +49,7 @@ local keda(config) = {
         useCachedMetrics=(if std.objectHas(trigerConfig, 'useCachedMetrics') then trigerConfig.useCachedMetrics else false),
         metricType=(if std.objectHas(trigerConfig, 'metricType') then trigerConfig.metricType else 'AverageValue'),
       )
-      for trigerConfig in config.trigerConfigs
+      for trigerConfig in config.keda.trigerConfigs
     ],
   },
 };
