@@ -31,6 +31,7 @@ local keda(config) = {
     cooldownPeriod: config.keda.cooldownPeriod,
     minReplicaCount: config.minReplicas,
     maxReplicaCount: config.maxReplicas,
+    idleReplicaCount: config.keda.idleReplicaCount,
     fallback: config.keda.fallback,
     advanced: {
       restoreToOriginalReplicaCount: config.keda.restoreToOriginalReplicaCount,
