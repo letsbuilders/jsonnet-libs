@@ -1,3 +1,6 @@
+local k = import 'github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet';
+local hpa = k.autoscaling.v2.horizontalPodAutoscaler;
+
 local metricDefinition(type, queue, value, activationThreshold, server, authentication, useCachedMetrics, metricType) =
   {
     type: type,
@@ -13,7 +16,7 @@ local metricDefinition(type, queue, value, activationThreshold, server, authenti
     },
   };
 
-local scaledObject(config) = {
+local keda(config) = {
   apiVersion: 'keda.sh/v1alpha1',
   kind: 'ScaledObject',
   metadata: {
@@ -50,7 +53,24 @@ local scaledObject(config) = {
     ],
   },
 };
+local horizontalPodAutoscaler(config) = (
+  hpa.new(config.name)
+  + hpa.metadata.withAnnotations(config.annotations)
+  + hpa.spec.scaleTargetRef.withKind(config.scaleTarget.kind)
+  + hpa.spec.scaleTargetRef.withName(config.scaleTarget.name)
+  + hpa.spec.scaleTargetRef.withApiVersion(config.scaleTarget.apiVersion)
+  + hpa.spec.withMaxReplicas(config.maxReplicas)
+  + hpa.spec.withMinReplicas(config.minReplicas)
+  + hpa.spec.withMetrics(config.metrics)
+  + hpa.spec.behavior.scaleDown.withPolicies(config.behavior.scaleDown.policies)
+  + hpa.spec.behavior.scaleDown.withSelectPolicy(config.behavior.scaleDown.selectPolicy)
+  + hpa.spec.behavior.scaleDown.withStabilizationWindowSeconds(config.behavior.scaleDown.stabilizationWindowSeconds)
+  + hpa.spec.behavior.scaleUp.withPolicies(config.behavior.scaleUp.policies)
+  + hpa.spec.behavior.scaleUp.withSelectPolicy(config.behavior.scaleUp.selectPolicy)
+  + hpa.spec.behavior.scaleUp.withStabilizationWindowSeconds(config.behavior.scaleUp.stabilizationWindowSeconds)
+);
 
 {
-  scaledObject:: scaledObject,
+  keda:: keda,
+  horizontalPodAutoscaler:: horizontalPodAutoscaler,
 }

@@ -1,6 +1,6 @@
+local autoscaler = import 'autoscaler.libsonnet';
 local k = import 'github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet';
 local util = import 'github.com/grafana/jsonnet-libs/ksonnet-util/util.libsonnet';
-local keda = import 'keda.libsonnet';
 
 
 local objectMetadata(object, config) =
@@ -240,7 +240,7 @@ local letsbuildServiceDeployment(
 
   local s = self,
 
-  local hpa = k.autoscaling.v2.horizontalPodAutoscaler,
+  // local hpa = k.autoscaling.v2.horizontalPodAutoscaler,
   local deployment = k.apps.v1.deployment,
   local pdb = k.policy.v1.podDisruptionBudget,
 
@@ -328,27 +328,13 @@ local letsbuildServiceDeployment(
   // We must generate a service if an ingress was requested
   service: if withService || withIngress then serviceSpec(s.deployment, dc) else {},
 
-  keda: (if dc.autoscaling.enabledKeda then keda.scaledObject(dc.autoscaling) else
-           {
-             hpa: (
-               if dc.autoscaling.enabled
-               then
-                 hpa.new(dc.name)
-                 + hpa.metadata.withAnnotations(dc.autoscaling.annotations)
-                 + hpa.spec.scaleTargetRef.withKind(s.deployment.kind)
-                 + hpa.spec.scaleTargetRef.withName(s.deployment.metadata.name)
-                 + hpa.spec.scaleTargetRef.withApiVersion(s.deployment.apiVersion)
-                 + hpa.spec.withMaxReplicas(dc.autoscaling.maxReplicas)
-                 + hpa.spec.withMinReplicas(dc.autoscaling.minReplicas)
-                 + hpa.spec.withMetrics(dc.autoscaling.metrics)
-                 + hpa.spec.behavior.scaleDown.withPolicies(dc.autoscaling.behavior.scaleDown.policies)
-                 + hpa.spec.behavior.scaleDown.withSelectPolicy(dc.autoscaling.behavior.scaleDown.selectPolicy)
-                 + hpa.spec.behavior.scaleDown.withStabilizationWindowSeconds(dc.autoscaling.behavior.scaleDown.stabilizationWindowSeconds)
-                 + hpa.spec.behavior.scaleUp.withPolicies(dc.autoscaling.behavior.scaleUp.policies)
-                 + hpa.spec.behavior.scaleUp.withSelectPolicy(dc.autoscaling.behavior.scaleUp.selectPolicy)
-                 + hpa.spec.behavior.scaleUp.withStabilizationWindowSeconds(dc.autoscaling.behavior.scaleUp.stabilizationWindowSeconds)
-             ),
-           }),
+  autoscaling: (
+    if dc.autoscaling.enabled then
+      if dc.autoscaling.keda.enabled then
+        autoscaler.keda(dc.autoscaling.keda)
+      else
+        autoscaler.horizontalPodAutoscaler(dc.autoscaling)
+  ),
 
   pdb: (
     if dc.autoscaling.enabled
@@ -425,27 +411,13 @@ local letsbuildServiceStatefulSet(statefulsetConfig, withService=true, withIngre
 
   ingress: if withIngress then ingressSpec(ic, s.service),
 
-  keda: (if sts.autoscaling.enabledKeda then keda.scaledObject(sts.autoscaling) else
-           {
-             hpa: (
-               if sts.autoscaling.enabled
-               then
-                 hpa.new(sts.name)
-                 + hpa.metadata.withAnnotations(sts.autoscaling.annotations)
-                 + hpa.spec.scaleTargetRef.withKind(s.statefulSet.kind)
-                 + hpa.spec.scaleTargetRef.withName(s.statefulSet.metadata.name)
-                 + hpa.spec.scaleTargetRef.withApiVersion(s.statefulSet.apiVersion)
-                 + hpa.spec.withMaxReplicas(sts.autoscaling.maxReplicas)
-                 + hpa.spec.withMinReplicas(sts.autoscaling.minReplicas)
-                 + hpa.spec.withMetrics(sts.autoscaling.metrics)
-                 + hpa.spec.behavior.scaleDown.withPolicies(sts.autoscaling.behavior.scaleDown.policies)
-                 + hpa.spec.behavior.scaleDown.withSelectPolicy(sts.autoscaling.behavior.scaleDown.selectPolicy)
-                 + hpa.spec.behavior.scaleDown.withStabilizationWindowSeconds(sts.autoscaling.behavior.scaleDown.stabilizationWindowSeconds)
-                 + hpa.spec.behavior.scaleUp.withPolicies(sts.autoscaling.behavior.scaleUp.policies)
-                 + hpa.spec.behavior.scaleUp.withSelectPolicy(sts.autoscaling.behavior.scaleUp.selectPolicy)
-                 + hpa.spec.behavior.scaleUp.withStabilizationWindowSeconds(sts.autoscaling.behavior.scaleUp.stabilizationWindowSeconds)
-             ),
-           }),
+  autoscaling: (
+    if sts.autoscaling.enabled then
+      if sts.autoscaling.keda.enabled then
+        autoscaler.keda(sts.autoscaling.keda)
+      else
+        autoscaler.horizontalPodAutoscaler(sts.autoscaling)
+  ),
 
   pdb: (
     if sts.autoscaling.enabled
