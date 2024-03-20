@@ -382,6 +382,38 @@ local letsbuildServiceStatefulSet(statefulsetConfig, withService=true, withIngre
   local statefulSet = k.apps.v1.statefulSet,
   local pdb = k.policy.v1.podDisruptionBudget,
 
+  subPath(volume)::
+    (if std.objectHas(volume, 'subPath') then k.core.v1.volumeMount.withSubPath(volume.subPath) else {}),
+  volumeMounts(volumes)::
+    local container = k.core.v1.container,
+          volumeMount = k.core.v1.volumeMount,
+          volume = k.core.v1.volume;
+    local addMounts(c) = c + container.withVolumeMountsMixin([
+      volumeMount.new(m.name, m.path) + s.subPath(m)
+      for m in volumes
+    ]);
+
+    statefulSet.mapContainers(addMounts)
+    + statefulSet.mixin.spec.template.spec.withVolumesMixin(std.set(std.prune(
+      [
+        if std.objectHas(m, 'configMap') then volume.fromConfigMap(m.name, m.configMap.name, if std.objectHas(m.configMap, 'items') then m.configMap.items else []) else null
+        for m in volumes
+      ] +
+      [
+        if std.objectHas(m, 'emptyDir') then volume.fromEmptyDir(m.name, m.emptyDir) else null
+        for m in volumes
+      ] +
+      [
+        if std.objectHas(m, 'secret') then volume.fromSecret(m.name, m.secret.secretName)
+                                           + (if std.objectHas(m.secret, 'defaultMode') then volume.secret.withDefaultMode(m.secret.defaultMode) else {}) else null
+        for m in volumes
+      ] +
+      [
+        if std.objectHas(m, 'claim') then volume.fromPersistentVolumeClaim(m.name, m.claim.claimName) else null
+        for m in volumes
+      ]
+    ), keyF=function(x) x.name)),
+
   statefulSet:
     statefulSet.new(sts.name, replicas=1, containers=containers)
     // Hide replicas to avoid conflicts with HPA
@@ -397,6 +429,8 @@ local letsbuildServiceStatefulSet(statefulsetConfig, withService=true, withIngre
       if std.objectHas(sts, 'revisionHistoryLimit') then sts.revisionHistoryLimit else 3
     )
     + statefulSet.spec.withServiceName(sts.name)
+    // Volume mount functions in StatefulSets:
+    + s.volumeMounts(sts.volumes)
     // Node Affinity
     + (if sts.nodeAffinity.enabledPreffered then statefulSet.spec.template.spec.affinity.nodeAffinity.withPreferredDuringSchedulingIgnoredDuringExecution(sts.nodeAffinity.preferred) else {})
     + (if sts.nodeAffinity.enabledRequired then statefulSet.spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.withNodeSelectorTerms(sts.nodeAffinity.required.nodeSelectorTerms) else {})
