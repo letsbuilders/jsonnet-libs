@@ -103,7 +103,6 @@
 
       // Pod Labels
       podLabels: {
-        team: error 'podLabels.team must be set',
         dept: 'product',
         product: 'letsbuild',
         env: s.namespace,
