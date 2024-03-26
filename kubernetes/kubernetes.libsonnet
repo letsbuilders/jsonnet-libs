@@ -10,6 +10,7 @@ local objectMetadata(object, config) =
       name: config.name,
       app: config.name,
       'letsbuild.com/service': config.name,
+      product: config.podLabels.product,
     } + config.labels
   )
   // object annotation
