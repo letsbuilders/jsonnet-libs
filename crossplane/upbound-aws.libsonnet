@@ -45,10 +45,9 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
   // convert a map of tags defined in c.aws.tagging to a list of key,value pairs
   // This allows easy overriding of tags in c.aws.tagging and generates a format required by crossplane API
 
-  local tagSets = [
-    { key: key, value: c.aws.tagging[key] }
-    for key in std.objectFields(c.aws.tagging)
-  ],
+  local tagSets = { 
+    [key]: c.aws.tagging[key] for key in std.objectFields(c.aws.tagging)
+},
 
   // Resource names
 
@@ -166,8 +165,8 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
         forProvider: {
           region: c.aws.region,
           tags: {
-
-          },
+            namespace: c.serviceNamespace,
+          } + tagSets,
         },
       },
     },
