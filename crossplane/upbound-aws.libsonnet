@@ -1,5 +1,6 @@
 // Helper utilities for AWS resources
 local aws = import 'provider-aws.libsonnet';
+local upboundBucket = import 'bucket.libsonnet';
 
 local role = aws.iam.v1beta1.role;
 local bucket = aws.s3.v1beta1.bucket;
@@ -152,85 +153,26 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
 
   // Resources
   bucket:: {
-    bucket: {
-      apiVersion: 's3.aws.upbound.io/v1beta1',
-      kind: 'Bucket',
-      metadata: {
-        name: s.bucketName,
-        labels: {
-          bucket: s.bucketName,
-        },
-      },
-      spec: {
-        forProvider: {
-          region: c.aws.region,
-          tags: {
-            namespace: c.serviceNamespace,
-          } + tagSets,
-        },
-      },
-    },
-    bucketAcl: {
-      apiVersion: 's3.aws.upbound.io/v1beta1',
-      kind: 'BucketACL',
-      metadata: {
-        name: s.bucketName,
-      },
-      spec: {
-        forProvider: {
-          region: 'us-west-1',
-          bucketSelector: {
-            matchLabels: {
-              bucket: s.bucketName,
-            },
-          },
-          acl: c.aws.bucket.acl,
-        },
-      },
-    },
-    bucketOwner: {
-      apiVersion: 's3.aws.upbound.io/v1beta1',
-      kind: 'BucketOwnershipControls',
-      metadata: {
-        name: s.bucketName,
-      },
-      spec: {
-        forProvider: {
-          region: 'us-west-1',
-          bucketSelector: {
-            matchLabels: {
-              bucket: s.bucketName,
-            },
-          },
-          rule: [
-            {
-              objectOwnership: 'BucketOwnerPreferred',
-            },
-          ],
-        },
-      },
-    },
-    bucketPolicy: {
-      apiVersion: 's3.aws.upbound.io/v1beta1',
-      kind: 'BucketPolicy',
-      metadata: {
-        labels: {
-          bucket: s.bucketName,
-        },
-        name: s.bucketName,
-      },
-      spec: {
-        forProvider: {
-          region: c.aws.region,
-          bucketSelector: {
-            matchLabels: {
-              bucket: s.bucketName,
-            },
-          },
-          policy: std.manifestJsonEx(s.allowRoleToBucketPolicy, '  '),
-        },
-      },
-    },
+    bucket: upboundBucket.bucket(
+      bucketName=s.bucketName,
+      region=c.aws.region,
+      serviceNamespace=c.serviceNamespace,
+      tagSets=tagSets,
+    ),
+    bucketAcl: upboundBucket.bucketAcl(
+      bucketName=s.bucketName,
+      region=c.aws.region,
+      acl=c.aws.bucket.acl,
+    ),
+    bucketOwner: upboundBucket.bucketOwner(
+      bucketName=s.bucketName,
+      region=c.aws.region,
+    ),
+    bucketPolicy: upboundBucket.bucketPolicy(
+       bucketName=s.bucketName,
+      region=c.aws.region,
+      policy=s.allowRoleToBucketPolicy,
+    ),
   },
 
   iamRole:: {
