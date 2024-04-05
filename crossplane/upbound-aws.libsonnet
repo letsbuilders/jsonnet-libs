@@ -1,14 +1,12 @@
 // Helper utilities for AWS resources
 local aws = import 'provider-aws.libsonnet';
-local upboundBucket = import 'bucket.libsonnet';
-local upboundIAM = import 'iam.libsonnet';
 
 local role = aws.iam.v1beta1.role;
 local bucket = aws.s3.v1beta1.bucket;
 local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
 
 
-{
+(import 'bucket.libsonnet') + {
   _config:: {
     local s = self,
 
@@ -47,11 +45,14 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
   // convert a map of tags defined in c.aws.tagging to a list of key,value pairs
   // This allows easy overriding of tags in c.aws.tagging and generates a format required by crossplane API
 
-  local tagSets = { 
-    [key]: c.aws.tagging[key] for key in std.objectFields(c.aws.tagging)
-},
+  local tagSets = {
+    [key]: c.aws.tagging[key]
+    for key in std.objectFields(c.aws.tagging)
+  },
 
   // Resource names
+  upboundBucket:: import 'bucket.libsonnet',
+  upboundIAM:: import 'iam.libsonnet',
 
   bucketName:: '%(serviceName)s-%(namespace)s-%(clusterName)s-%(accountName)s-%(region)s' % {
     serviceName: c.serviceName,
@@ -154,30 +155,30 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
 
   // Resources
   bucket:: {
-    bucket: upboundBucket.bucket(
+    bucket: s.upboundBucket.bucket(
       bucketName=s.bucketName,
       region=c.aws.region,
       serviceNamespace=c.serviceNamespace,
       tagSets=tagSets,
     ),
-    bucketAcl: upboundBucket.bucketAcl(
+    bucketAcl: s.upboundBucket.bucketAcl(
       bucketName=s.bucketName,
       region=c.aws.region,
       acl=c.aws.bucket.acl,
     ),
-    bucketOwner: upboundBucket.bucketOwner(
+    bucketOwner: s.upboundBucket.bucketOwner(
       bucketName=s.bucketName,
       region=c.aws.region,
     ),
-    bucketPolicy: upboundBucket.bucketPolicy(
-       bucketName=s.bucketName,
+    bucketPolicy: s.upboundBucket.bucketPolicy(
+      bucketName=s.bucketName,
       region=c.aws.region,
       policy=s.allowRoleToBucketPolicy,
     ),
   },
 
   iamRole:: {
-    role: upboundIAM.role(
+    role: s.upboundIAM.role(
       name=s.roleName,
       trustPolicy=s.serviceAccountTrustRelationship,
     ),

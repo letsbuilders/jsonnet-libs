@@ -1,9 +1,10 @@
-  local role(name, trustPolicy) = {
+{
+  role(name, trustPolicy):: {
     apiVersion: 'iam.aws.upbound.io/v1beta1',
     kind: 'Role',
     metadata: {
       labels: {
-        'role': name,
+        role: name,
       },
       name: name,
     },
@@ -12,8 +13,8 @@
         assumeRolePolicy: std.manifestJsonEx(trustPolicy, '  '),
       },
     },
-  };
-  local rolePolicyAttachment(name, roleName, policyName) = {
+  },
+  rolePolicyAttachment(name, roleName, policyName):: {
     apiVersion: 'iam.aws.upbound.io/v1beta1',
     kind: 'RolePolicyAttachment',
     metadata: {
@@ -26,23 +27,23 @@
       forProvider: {
         policyArnSelector: {
           matchLabels: {
-            'policy': policyName,
+            policy: policyName,
           },
         },
         roleSelector: {
           matchLabels: {
-            'role': roleName,
+            role: roleName,
           },
         },
       },
     },
-  };
-  local policy(name, resourcePolicy) = {
+  },
+  policy(name, resourcePolicy):: {
     apiVersion: 'iam.aws.upbound.io/v1beta1',
     kind: 'Policy',
     metadata: {
       labels: {
-        'policy': name,
+        policy: name,
       },
       name: name,
     },
@@ -51,8 +52,8 @@
         policy: resourcePolicy,
       },
     },
-  };
-  local rolePolicy(name, roleName, resourcePolicy) = {
+  },
+  rolePolicy(name, roleName, resourcePolicy):: {
     apiVersion: 'iam.aws.upbound.io/v1beta1',
     kind: 'RolePolicy',
     metadata: {
@@ -66,16 +67,10 @@
         policy: resourcePolicy,
         roleSelector: {
           matchLabels: {
-            'role': roleName,
+            role: roleName,
           },
         },
       },
     },
-  };
-
-  {
-    role:: role,
-    rolePolicyAttachment:: rolePolicyAttachment,
-    policy:: policy,
-    rolePolicy:: rolePolicy,
-  }
+  },
+}
