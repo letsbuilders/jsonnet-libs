@@ -9,7 +9,7 @@
     },
     spec: {
       forProvider: {
-        assumeRolePolicy: trustPolicy,
+        assumeRolePolicy: std.manifestJsonEx(trustPolicy, '  '),
       },
     },
   };
@@ -52,9 +52,30 @@
       },
     },
   };
+  local rolePolicy(name, roleName, resourcePolicy) = {
+    apiVersion: 'iam.aws.upbound.io/v1beta1',
+    kind: 'RolePolicy',
+    metadata: {
+      labels: {
+        'role-policy': '%s-%s' % [roleName, name],
+      },
+      name: name,
+    },
+    spec: {
+      forProvider: {
+        policy: resourcePolicy,
+        roleSelector: {
+          matchLabels: {
+            'role': roleName,
+          },
+        },
+      },
+    },
+  };
 
   {
     role:: role,
     rolePolicyAttachment:: rolePolicyAttachment,
     policy:: policy,
+    rolePolicy:: rolePolicy,
   }

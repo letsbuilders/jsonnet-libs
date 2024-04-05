@@ -1,6 +1,7 @@
 // Helper utilities for AWS resources
 local aws = import 'provider-aws.libsonnet';
 local upboundBucket = import 'bucket.libsonnet';
+local upboundIAM = import 'iam.libsonnet';
 
 local role = aws.iam.v1beta1.role;
 local bucket = aws.s3.v1beta1.bucket;
@@ -176,10 +177,9 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
   },
 
   iamRole:: {
-    role:
-      role.new(s.roleName)
-      + role.mixin.spec.forProvider.withAssumeRolePolicyDocument(std.manifestJsonEx(s.serviceAccountTrustRelationship, '  '))
-      + role.mixin.spec.providerConfigRef.withName(c.crossplaneProvider),
+    role: upboundIAM.role(
+      name=s.roleName,
+      trustPolicy=s.serviceAccountTrustRelationship,
+    ),
   },
-
 }
