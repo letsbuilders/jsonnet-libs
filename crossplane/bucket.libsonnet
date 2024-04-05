@@ -1,11 +1,11 @@
 {
-  bucket(bucketName, region, serviceNamespace, tagSets):: {
+  bucket(bucketName, region, serviceNamespace, tagSets, annotations={}, labels={}):: {
     apiVersion: 's3.aws.upbound.io/v1beta1',
     kind: 'Bucket',
     metadata: {
       name: bucketName,
-
-      labels: {
+      annotations: annotations,
+      labels: labels {
         bucket: bucketName,
       },
     },
@@ -18,11 +18,12 @@
       },
     },
   },
-  bucketAcl(bucketName, region, acl):: {
+  bucketAcl(bucketName, region, acl, annotations={}, labels={}):: {
     apiVersion: 's3.aws.upbound.io/v1beta1',
     kind: 'BucketACL',
     metadata: {
-
+      annotations: annotations,
+      labels: labels,
       name: bucketName,
     },
     spec: {
@@ -37,11 +38,12 @@
       },
     },
   },
-  bucketOwner(bucketName, region):: {
+  bucketOwner(bucketName, region, annotations={}, labels={}):: {
     apiVersion: 's3.aws.upbound.io/v1beta1',
     kind: 'BucketOwnershipControls',
     metadata: {
-
+      annotations: annotations,
+      labels: labels,
       name: bucketName,
     },
     spec: {
@@ -60,11 +62,12 @@
       },
     },
   },
-  bucketPolicy(bucketName, region, policy):: {
+  bucketPolicy(bucketName, region, policy, annotations={}, labels={}):: {
     apiVersion: 's3.aws.upbound.io/v1beta1',
     kind: 'BucketPolicy',
     metadata: {
-
+      annotations: annotations,
+      labels: labels,
       name: bucketName,
     },
     spec: {
@@ -79,10 +82,12 @@
       },
     },
   },
-  bucketCors(bucketName, region, corsRules):: {
+  bucketCors(bucketName, region, corsRules, annotations={}, labels={}):: {
     apiVersion: 's3.aws.upbound.io/v1beta1',
     kind: 'BucketCorsConfiguration',
     metadata: {
+      annotations: annotations,
+      labels: labels,
       name: bucketName,
     },
     spec: {
@@ -97,10 +102,12 @@
       },
     },
   },
-  bucketLifeCycle(bucketName, region, rules):: {
+  bucketLifeCycle(bucketName, region, rules, annotations={}, labels={}):: {
     apiVersion: 's3.aws.upbound.io/v1beta1',
     kind: 'BucketLifecycleConfiguration',
     metadata: {
+      annotations: annotations,
+      labels: labels,
       name: bucketName,
     },
     spec: {
@@ -115,10 +122,12 @@
       },
     },
   },
-  bucketAccess(bucketName, region, PublicAccessBlocks):: {
+  bucketAccess(bucketName, region, PublicAccessBlocks, annotations={}, labels={}):: {
     apiVersion: 's3.aws.upbound.io/v1beta1',
     kind: 'BucketPublicAccessBlock',
     metadata: {
+      annotations: annotations,
+      labels: labels,
       name: bucketName,
     },
     spec: {
@@ -133,10 +142,12 @@
       },
     },
   },
-  bucketVersioning(bucketName, region, status='Enabled'):: {
+  bucketVersioning(bucketName, region, status='Enabled', annotations={}, labels={}):: {
     apiVersion: 's3.aws.upbound.io/v1beta1',
     kind: 'BucketVersioning',
     metadata: {
+      annotations: annotations,
+      labels: labels,
       name: bucketName,
     },
     spec: {

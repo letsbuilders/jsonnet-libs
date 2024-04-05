@@ -1,9 +1,10 @@
 {
-  role(name, trustPolicy):: {
+  role(name, trustPolicy, annotations={}, labels={}):: {
     apiVersion: 'iam.aws.upbound.io/v1beta1',
     kind: 'Role',
     metadata: {
-      labels: {
+      annotations: annotations,
+      labels: labels {
         role: name,
       },
       name: name,
@@ -14,13 +15,12 @@
       },
     },
   },
-  rolePolicyAttachment(name, roleName, policyName):: {
+  rolePolicyAttachment(name, roleName, policyName, annotations={}, labels={}):: {
     apiVersion: 'iam.aws.upbound.io/v1beta1',
     kind: 'RolePolicyAttachment',
     metadata: {
-      labels: {
-        'role-policy': '%s-%s' % [roleName, policyName],
-      },
+      annotations: annotations,
+      labels: labels,
       name: name,
     },
     spec: {
@@ -38,13 +38,14 @@
       },
     },
   },
-  policy(name, resourcePolicy):: {
+  policy(name, resourcePolicy, annotations={}, labels={}):: {
     apiVersion: 'iam.aws.upbound.io/v1beta1',
     kind: 'Policy',
     metadata: {
-      labels: {
+      labels: labels {
         policy: name,
       },
+      annotations: annotations,
       name: name,
     },
     spec: {
@@ -53,13 +54,12 @@
       },
     },
   },
-  rolePolicy(name, roleName, resourcePolicy):: {
+  rolePolicy(name, roleName, resourcePolicy, annotations={}, labels={}):: {
     apiVersion: 'iam.aws.upbound.io/v1beta1',
     kind: 'RolePolicy',
     metadata: {
-      labels: {
-        'role-policy': '%s-%s' % [roleName, name],
-      },
+      annotations: annotations,
+      labels: labels,
       name: name,
     },
     spec: {
