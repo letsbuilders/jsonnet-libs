@@ -122,7 +122,7 @@
       },
     },
   },
-  bucketAccess(bucketName, region, PublicAccessBlocks, annotations={}, labels={}):: {
+  bucketAccess(bucketName, region, publicAccessBlocks, annotations={}, labels={}):: {
     apiVersion: 's3.aws.upbound.io/v1beta1',
     kind: 'BucketPublicAccessBlock',
     metadata: {
@@ -138,7 +138,7 @@
           },
         },
         region: region,
-        PublicAccessBlock: PublicAccessBlocks,
+        PublicAccessBlock: publicAccessBlocks,
       },
     },
   },

@@ -176,11 +176,39 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
       policy=s.allowRoleToBucketPolicy,
     ),
   },
+  bucketConfig:: {
+    bucketVersioning: s.upboundBucket.bucketVersioning(
+      bucketName=s.bucketName,
+      region=c.aws.region,
+    ),
+    bucketAccess: s.upboundBucket.bucketAccess(
+      bucketName=s.bucketName,
+      region=c.aws.region,
+      publicAccessBlocks=s.publicAccessBlocks,
+    ),
+    bucketLifeCycle: s.upboundBucket.bucketLifeCycle(
+      bucketName=s.bucketName,
+      region=c.aws.region,
+      rules=s.lifeCycleRules,
+    ),
+    bucketCors: s.upboundBucket.bucketCors(
+      bucketName=s.bucketName,
+      region=c.aws.region,
+      corsRules=s.corsRules
+    ),
+  },
 
   iamRole:: {
     role: s.upboundIAM.role(
       name=s.roleName,
       trustPolicy=s.serviceAccountTrustRelationship,
+    ),
+  },
+  iamRoleConfig: {
+    rolePolicy: s.upboundIAM.rolePolicy(
+      name=s.roleName,
+      roleName=s.roleName,
+      resourcePolicy=s.serviceAccountTrustRelationship,
     ),
   },
 }
