@@ -64,10 +64,10 @@
     },
     spec: {
       forProvider: {
-        policy: resourcePolicy,
+        policy: std.manifestJsonEx(resourcePolicy, '  '),
         roleSelector: {
           matchLabels: {
-            role: std.manifestJsonEx(resourcePolicy, '  '),
+            role: roleName,
           },
         },
       },
