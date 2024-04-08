@@ -204,7 +204,7 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
       trustPolicy=s.serviceAccountTrustRelationship,
     ),
   },
-  iamRoleConfig: {
+  iamRoleConfig:: {
     rolePolicy: s.upboundIAM.rolePolicy(
       name=s.roleName,
       roleName=s.roleName,
