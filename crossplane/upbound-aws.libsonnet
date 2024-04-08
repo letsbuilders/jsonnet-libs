@@ -100,13 +100,7 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
         Effect: 'Allow',
         Resource: ['arn:aws:s3:::%s/*' % s.bucketName],
         Principal: {
-          awsPrincipals: [
-            {
-              // If I use iamRoleArnRef here tanka wants to remove iamRoleArn because it gets added by crossplane
-              // https://github.com/crossplane/provider-aws/issues/555
-              iamRoleArn: 'arn:aws:iam::%(accountId)s:role/%(roleName)s' % { accountId: c.aws.accountId, roleName: s.roleName },
-            },
-          ],
+          AWS: 'arn:aws:iam::%(accountId)s:role/%(roleName)s' % { accountId: c.aws.accountId, roleName: s.roleName },
         },
       },
       {
@@ -115,11 +109,7 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
         Effect: 'Allow',
         Resource: ['arn:aws:s3:::%s' % s.bucketName],
         Principal: {
-          awsPrincipals: [
-            {
-              iamRoleArn: 'arn:aws:iam::%(accountId)s:role/%(roleName)s' % { accountId: c.aws.accountId, roleName: s.roleName },
-            },
-          ],
+           AWS: 'arn:aws:iam::%(accountId)s:role/%(roleName)s' % { accountId: c.aws.accountId, roleName: s.roleName },
         },
       },
     ],
