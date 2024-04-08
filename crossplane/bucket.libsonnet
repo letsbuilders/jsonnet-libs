@@ -131,14 +131,13 @@
       name: bucketName,
     },
     spec: {
-      forProvider: {
+      forProvider: publicAccessBlocks {
         bucketSelector: {
           matchLabels: {
             bucket: bucketName,
           },
         },
         region: region,
-        PublicAccessBlock: publicAccessBlocks,
       },
     },
   },
