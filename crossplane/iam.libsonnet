@@ -50,7 +50,7 @@
     },
     spec: {
       forProvider: {
-        policy: resourcePolicy,
+        policy: std.manifestJsonEx(resourcePolicy, '  '),
       },
     },
   },
@@ -67,7 +67,7 @@
         policy: resourcePolicy,
         roleSelector: {
           matchLabels: {
-            role: roleName,
+            role: std.manifestJsonEx(resourcePolicy, '  '),
           },
         },
       },
