@@ -198,7 +198,7 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
     rolePolicy: s.upboundIAM.rolePolicy(
       name=s.roleName,
       roleName=s.roleName,
-      resourcePolicy=s.serviceAccountTrustRelationship,
+      resourcePolicy=s.resourcePolicy,
     ),
   },
 }
