@@ -95,11 +95,11 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
     Version: '2012-10-17',
     Statement: [
       {
-        sid: 'DownloadandUpload',
-        action: ['s3:GetObject', 's3:GetObjectAcl', 's3:GetObjectVersion', 's3:PutObject', 's3:PutObjectAcl', 's3:DeleteObject', 's3:DeleteObjectVersion'],
-        effect: 'Allow',
-        resource: ['arn:aws:s3:::%s/*' % s.bucketName],
-        principal: {
+        Sid: 'DownloadandUpload',
+        Action: ['s3:GetObject', 's3:GetObjectAcl', 's3:GetObjectVersion', 's3:PutObject', 's3:PutObjectAcl', 's3:DeleteObject', 's3:DeleteObjectVersion'],
+        Effect: 'Allow',
+        Resource: ['arn:aws:s3:::%s/*' % s.bucketName],
+        Principal: {
           awsPrincipals: [
             {
               // If I use iamRoleArnRef here tanka wants to remove iamRoleArn because it gets added by crossplane
@@ -110,11 +110,11 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
         },
       },
       {
-        sid: 'List',
-        action: ['s3:ListBucket'],
-        effect: 'Allow',
-        resource: ['arn:aws:s3:::%s' % s.bucketName],
-        principal: {
+        Sid: 'List',
+        Action: ['s3:ListBucket'],
+        Effect: 'Allow',
+        Resource: ['arn:aws:s3:::%s' % s.bucketName],
+        Principal: {
           awsPrincipals: [
             {
               iamRoleArn: 'arn:aws:iam::%(accountId)s:role/%(roleName)s' % { accountId: c.aws.accountId, roleName: s.roleName },
