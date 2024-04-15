@@ -54,6 +54,7 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
   upboundBucket:: import 'bucket.libsonnet',
   upboundIAM:: import 'iam.libsonnet',
   upboundKms:: import 'kms.libsonnet',
+  upboundRds:: import 'rds.libsonnet',
 
   bucketName:: '%(serviceName)s-%(namespace)s-%(clusterName)s-%(accountName)s-%(region)s' % {
     serviceName: c.serviceName,
@@ -72,6 +73,12 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
     namespace: c.serviceNamespace,
     clusterName: c.aws.clusterName,
   },
+  rdsName:: '%(clusterName)s-%(namespace)s-%(serviceName)s' % {
+    serviceName: c.serviceName,
+    namespace: c.serviceNamespace,
+    clusterName: c.aws.clusterName,
+  },
+  rdsSecretName:: 'rds-%s-creds' % c.serviceName,
 
   // Resource policy documents
 
@@ -234,6 +241,33 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
     alias: s.upboundKms.keyAlias(
       name=s.keyName,
       region=c.aws.region,
+    ),
+  },
+
+  rds:: {
+    instance: s.upboundRds.rdsInstance(
+      name=s.rdsName,
+      region=c.aws.region,
+      parameters=s.rdsParameters,
+      serviceNamespace=c.serviceNamespace,
+      secretName=s.rdsSecretName
+    ),
+  },
+  rdsReadOnly:: {
+    instanceReadOnly: s.upboundRds.rdsInstanceReadOnly(
+      name=s.rdsName,
+      region=c.aws.region,
+      parameters=s.rdsParametersReadOnly,
+      serviceNamespace=c.serviceNamespace,
+      secretName=s.rdsSecretName
+    ),
+  },
+  rdsParameterGroup:: {
+    instance: s.upboundRds.parameterGroup(
+      name=s.rdsName,
+      region=c.aws.region,
+      parameters=s.parameterGroupParams,
+      family=c.aws.rdsFamily,
     ),
   },
 }
