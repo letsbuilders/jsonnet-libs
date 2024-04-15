@@ -165,27 +165,30 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
       region=c.aws.region,
       policy=s.allowRoleToBucketPolicy,
     ),
-  },
-  bucketConfig:: {
-    bucketVersioning: s.upboundBucket.bucketVersioning(
+    [if c.aws.bucket.scan == true then 'bucketNotifications']: s.upboundBucket.bucketNotifications(
       bucketName=s.bucketName,
       region=c.aws.region,
-    ),
-    bucketAccess: s.upboundBucket.bucketAccess(
+      queues=s.notificationConfiguration.queueConfigurations,
+      ),
+    [if std.objectHasAll(s, 'versioning') then 'bucketVersioning']: s.upboundBucket.bucketVersioning(
+      bucketName=s.bucketName,
+      region=c.aws.region,
+      ),
+    [if std.objectHasAll(s, 'publicAccessBlocks') then 'bucketAccess']: s.upboundBucket.bucketAccess(
       bucketName=s.bucketName,
       region=c.aws.region,
       publicAccessBlocks=s.publicAccessBlocks,
-    ),
-    bucketLifeCycle: s.upboundBucket.bucketLifeCycle(
+      ),
+    [if std.objectHasAll(s, 'lifeCycleRules') then 'bucketLifeCycle']: s.upboundBucket.bucketLifeCycle(
       bucketName=s.bucketName,
       region=c.aws.region,
       rules=s.lifeCycleRules,
-    ),
-    bucketCors: s.upboundBucket.bucketCors(
+      ),
+    [if std.objectHasAll(s, 'corsRules') then 'corsRules']: s.upboundBucket.bucketCors(
       bucketName=s.bucketName,
       region=c.aws.region,
       corsRules=s.corsRules
-    ),
+      ),
   },
 
   iamRole:: {

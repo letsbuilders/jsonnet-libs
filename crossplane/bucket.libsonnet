@@ -165,4 +165,24 @@
       },
     },
   },
+  bucketNotifications(bucketName, region, queues, annotations={}, labels={}):: {
+    apiVersion: 's3.aws.upbound.io/v1beta1',
+    kind: 'BucketNotification',
+    metadata: {
+      annotations: annotations,
+      labels: labels,
+      name: bucketName,
+    },
+    spec: {
+      forProvider: {
+        bucketSelector: {
+          matchLabels: {
+            bucket: bucketName,
+          },
+        },
+        queue: queues,
+        region: region,
+      },
+    },
+  },
 }
