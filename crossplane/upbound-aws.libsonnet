@@ -216,6 +216,11 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
       region=c.aws.region,
       corsRules=s.corsRules
     ),
+    [if std.objectHasAll(s, 'encryptionRules') then 'encryptionRules']: s.upboundBucket.bucketEncryption(
+      bucketName=s.bucketName,
+      region=c.aws.region,
+      encryptionRules=s.encryptionRules
+    ),
   },
 
   iamRole:: {

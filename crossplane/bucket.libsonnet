@@ -185,4 +185,24 @@
       },
     },
   },
+  bucketEncryption(bucketName, region, encryptionRules, annotations={}, labels={}):: {
+    apiVersion: 's3.aws.upbound.io/v1beta1',
+    kind: 'BucketServerSideEncryptionConfiguration',
+    metadata: {
+      annotations: annotations,
+      labels: labels,
+      name: bucketName,
+    },
+    spec: {
+      forProvider: {
+        bucketSelector: {
+          matchLabels: {
+            bucket: bucketName,
+          },
+        },
+        region: region,
+        rule: encryptionRules,
+      },
+    },
+  },
 }
