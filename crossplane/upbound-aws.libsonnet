@@ -53,6 +53,8 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
   // Resource names
   upboundBucket:: import 'bucket.libsonnet',
   upboundIAM:: import 'iam.libsonnet',
+  upboundKms:: import 'kms.libsonnet',
+  upboundRds:: import 'rds.libsonnet',
 
   bucketName:: '%(serviceName)s-%(namespace)s-%(clusterName)s-%(accountName)s-%(region)s' % {
     serviceName: c.serviceName,
@@ -66,6 +68,17 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
     namespace: c.serviceNamespace,
     clusterName: c.aws.clusterName,
   },
+  keyName:: '%(clusterName)s-%(namespace)s-%(serviceName)s' % {
+    serviceName: c.serviceName,
+    namespace: c.serviceNamespace,
+    clusterName: c.aws.clusterName,
+  },
+  rdsName:: '%(clusterName)s-%(namespace)s-%(serviceName)s' % {
+    serviceName: c.serviceName,
+    namespace: c.serviceNamespace,
+    clusterName: c.aws.clusterName,
+  },
+  rdsSecretName:: 'rds-%s-creds' % c.serviceName,
 
   // Resource policy documents
 
@@ -90,7 +103,6 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
     ],
   },
 
-
   allowRoleToBucketPolicy:: {
     Version: '2012-10-17',
     Statement: [
@@ -109,8 +121,23 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
         Effect: 'Allow',
         Resource: ['arn:aws:s3:::%s' % s.bucketName],
         Principal: {
-           AWS: 'arn:aws:iam::%(accountId)s:role/%(roleName)s' % { accountId: c.aws.accountId, roleName: s.roleName },
+          AWS: 'arn:aws:iam::%(accountId)s:role/%(roleName)s' % { accountId: c.aws.accountId, roleName: s.roleName },
         },
+      },
+    ],
+  },
+
+  keyPolicy:: {
+    Version: '2012-10-17',
+    Statement: [
+      {
+        Sid: 'Allow direct access to key metadata to the account',
+        Effect: 'Allow',
+        Principal: {
+          AWS: 'arn:aws:iam::%(accountId)s:root' % { accountId: c.aws.accountId },
+        },
+        Action: ['kms:*'],
+        Resource: ['*'],
       },
     ],
   },
@@ -169,26 +196,26 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
       bucketName=s.bucketName,
       region=c.aws.region,
       queues=s.notificationConfiguration.queueConfigurations,
-      ),
+    ),
     [if std.objectHasAll(s, 'versioning') then 'bucketVersioning']: s.upboundBucket.bucketVersioning(
       bucketName=s.bucketName,
       region=c.aws.region,
-      ),
+    ),
     [if std.objectHasAll(s, 'publicAccessBlocks') then 'bucketAccess']: s.upboundBucket.bucketAccess(
       bucketName=s.bucketName,
       region=c.aws.region,
       publicAccessBlocks=s.publicAccessBlocks,
-      ),
+    ),
     [if std.objectHasAll(s, 'lifeCycleRules') then 'bucketLifeCycle']: s.upboundBucket.bucketLifeCycle(
       bucketName=s.bucketName,
       region=c.aws.region,
       rules=s.lifeCycleRules,
-      ),
+    ),
     [if std.objectHasAll(s, 'corsRules') then 'corsRules']: s.upboundBucket.bucketCors(
       bucketName=s.bucketName,
       region=c.aws.region,
       corsRules=s.corsRules
-      ),
+    ),
   },
 
   iamRole:: {
@@ -202,6 +229,45 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
       name=s.roleName,
       roleName=s.roleName,
       resourcePolicy=s.resourcePolicy,
+    ),
+  },
+
+  key:: {
+    key: s.upboundKms.key(
+      name=s.keyName,
+      region=c.aws.region,
+      policy=s.keyPolicy,
+    ),
+    alias: s.upboundKms.keyAlias(
+      name=s.keyName,
+      region=c.aws.region,
+    ),
+  },
+
+  rds:: {
+    instance: s.upboundRds.rdsInstance(
+      name=s.rdsName,
+      region=c.aws.region,
+      parameters=s.rdsParameters,
+      serviceNamespace=c.serviceNamespace,
+      secretName=s.rdsSecretName
+    ),
+  },
+  rdsReadOnly:: {
+    instanceReadOnly: s.upboundRds.rdsInstanceReadOnly(
+      name=s.rdsName,
+      region=c.aws.region,
+      parameters=s.rdsParametersReadOnly,
+      serviceNamespace=c.serviceNamespace,
+      secretName=s.rdsSecretName
+    ),
+  },
+  rdsParameterGroup:: {
+    instance: s.upboundRds.parameterGroup(
+      name=s.rdsName,
+      region=c.aws.region,
+      parameters=s.parameterGroupParams,
+      family=c.aws.rdsFamily,
     ),
   },
 }
