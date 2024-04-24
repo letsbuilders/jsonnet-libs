@@ -480,6 +480,7 @@ local letsbuildJob(config, withServiceAccountObject={}) = {
     + job.spec.template.spec.withRestartPolicy('Never')
     + job.spec.template.spec.withContainers(containers)
     + job.spec.template.spec.withInitContainers(initContainers)
+    + job.spec.template.spec.withTolerations(config.podTolerations)
     + (
       if std.length(withServiceAccountObject) > 0
       then
