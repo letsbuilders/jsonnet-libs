@@ -28,6 +28,7 @@
       deletionPolicy: 'Orphan',
       forProvider: parameters {
         region: region,
+        identifier: name,
         passwordSecretRef: {
           name: 'master-%s-rds' % name,
           key: 'password',
@@ -59,6 +60,7 @@
       managementPolicies: ['Observe', 'Create', 'Update', 'Delete'],
       forProvider: parameters {
         region: region,
+        identifier: '%s-ro' % name,
         tags+: {
           namespace: serviceNamespace,
         },
