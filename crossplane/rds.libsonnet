@@ -15,7 +15,7 @@
   },
 
   rdsInstance(name, region, parameters, serviceNamespace, secretName, annotations={}, labels={}):: {
-    apiVersion: 'rds.aws.upbound.io/v1beta1',
+    apiVersion: 'rds.aws.upbound.io/v1beta2',
     kind: 'Instance',
     metadata: {
       name: name,
@@ -28,6 +28,7 @@
       deletionPolicy: 'Orphan',
       forProvider: parameters {
         region: region,
+        identifier: name,
         passwordSecretRef: {
           name: 'master-%s-rds' % name,
           key: 'password',
@@ -45,7 +46,7 @@
   },
 
   rdsInstanceReadOnly(name, region, parameters, serviceNamespace, secretName, annotations={}, labels={}):: {
-    apiVersion: 'rds.aws.upbound.io/v1beta1',
+    apiVersion: 'rds.aws.upbound.io/v1beta2',
     kind: 'Instance',
     metadata: {
       name: '%s-ro' % name,
@@ -59,6 +60,7 @@
       managementPolicies: ['Observe', 'Create', 'Update', 'Delete'],
       forProvider: parameters {
         region: region,
+        identifier: '%s-ro' % name,
         tags+: {
           namespace: serviceNamespace,
         },
