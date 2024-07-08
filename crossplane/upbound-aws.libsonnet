@@ -255,7 +255,8 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
       region=c.aws.region,
       parameters=s.rdsParameters,
       serviceNamespace=c.serviceNamespace,
-      secretName=s.rdsSecretName
+      secretName=s.rdsSecretName,
+      tagSets=tagSets,
     ),
   },
   rdsReadOnly:: {
@@ -264,7 +265,8 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
       region=c.aws.region,
       parameters=s.rdsParametersReadOnly,
       serviceNamespace=c.serviceNamespace,
-      secretName=s.rdsSecretName
+      secretName=s.rdsSecretName,
+      tagSets=tagSets,
     ),
   },
   rdsParameterGroup:: {
