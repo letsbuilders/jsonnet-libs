@@ -14,7 +14,7 @@
     },
   },
 
-  rdsInstance(name, region, parameters, serviceNamespace, secretName, annotations={}, labels={}):: {
+  rdsInstance(name, region, parameters, serviceNamespace, secretName, tagSets, annotations={}, labels={}):: {
     apiVersion: 'rds.aws.upbound.io/v1beta2',
     kind: 'Instance',
     metadata: {
@@ -36,7 +36,7 @@
         },
         tags+: {
           namespace: serviceNamespace,
-        },
+        } + tagSets,
       },
       writeConnectionSecretToRef: {
         name: secretName,
@@ -45,7 +45,7 @@
     },
   },
 
-  rdsInstanceReadOnly(name, region, parameters, serviceNamespace, secretName, annotations={}, labels={}):: {
+  rdsInstanceReadOnly(name, region, parameters, serviceNamespace, secretName, tagSets, annotations={}, labels={}):: {
     apiVersion: 'rds.aws.upbound.io/v1beta2',
     kind: 'Instance',
     metadata: {
@@ -63,7 +63,7 @@
         identifier: '%s-ro' % name,
         tags+: {
           namespace: serviceNamespace,
-        },
+        } + tagSets,
       },
       writeConnectionSecretToRef: {
         name: '%s-ro' % secretName,

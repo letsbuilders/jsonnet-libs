@@ -20,7 +20,10 @@
     kind: 'RolePolicyAttachment',
     metadata: {
       annotations: annotations,
-      labels: labels,
+      labels: labels {
+        role: roleName,
+        policy: policyName,
+      },
       name: name,
     },
     spec: {
@@ -59,7 +62,9 @@
     kind: 'RolePolicy',
     metadata: {
       annotations: annotations,
-      labels: labels,
+      labels: labels {
+        role: roleName,
+      },
       name: name,
     },
     spec: {

@@ -23,7 +23,9 @@
     kind: 'BucketACL',
     metadata: {
       annotations: annotations,
-      labels: labels,
+      labels: labels {
+        bucket: bucketName,
+      },
       name: bucketName,
     },
     spec: {
@@ -43,7 +45,9 @@
     kind: 'BucketOwnershipControls',
     metadata: {
       annotations: annotations,
-      labels: labels,
+      labels: labels {
+        bucket: bucketName,
+      },
       name: bucketName,
     },
     spec: {
@@ -67,7 +71,9 @@
     kind: 'BucketPolicy',
     metadata: {
       annotations: annotations,
-      labels: labels,
+      labels: labels {
+        bucket: bucketName,
+      },
       name: bucketName,
     },
     spec: {
@@ -87,7 +93,9 @@
     kind: 'BucketCorsConfiguration',
     metadata: {
       annotations: annotations,
-      labels: labels,
+      labels: labels {
+        bucket: bucketName,
+      },
       name: bucketName,
     },
     spec: {
@@ -107,7 +115,9 @@
     kind: 'BucketLifecycleConfiguration',
     metadata: {
       annotations: annotations,
-      labels: labels,
+      labels: labels {
+        bucket: bucketName,
+      },
       name: bucketName,
     },
     spec: {
@@ -127,7 +137,9 @@
     kind: 'BucketPublicAccessBlock',
     metadata: {
       annotations: annotations,
-      labels: labels,
+      labels: labels {
+        bucket: bucketName,
+      },
       name: bucketName,
     },
     spec: {
@@ -146,7 +158,9 @@
     kind: 'BucketVersioning',
     metadata: {
       annotations: annotations,
-      labels: labels,
+      labels: labels {
+        bucket: bucketName,
+      },
       name: bucketName,
     },
     spec: {
@@ -170,7 +184,9 @@
     kind: 'BucketNotification',
     metadata: {
       annotations: annotations,
-      labels: labels,
+      labels: labels {
+        bucket: bucketName,
+      },
       name: bucketName,
     },
     spec: {
@@ -190,7 +206,9 @@
     kind: 'BucketServerSideEncryptionConfiguration',
     metadata: {
       annotations: annotations,
-      labels: labels,
+      labels: labels {
+        bucket: bucketName,
+      },
       name: bucketName,
     },
     spec: {

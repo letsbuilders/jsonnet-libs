@@ -26,7 +26,9 @@
     kind: 'Alias',
     metadata: {
       annotations: annotations,
-      labels: labels,
+      labels: labels {
+        key: name,
+      },
       name: name,
     },
     spec: {
