@@ -3,6 +3,10 @@ local host(name, username, address='', secretName, secretKey, endpointKey='') = 
   kind: 'Host',
   metadata: {
     name: name,
+    annotations: {
+      'argocd.argoproj.io/sync-wave': '1',
+    },
+    finalizers: ['finalizer.postgres.letsbuild.com'],
   },
   spec: {
     [if address != '' then 'address']: address,
@@ -28,6 +32,7 @@ local database(databaseName, hostName, dropOnDeletion=true, name='', extensions=
     annotations: {
       'argocd.argoproj.io/sync-wave': '-3',
     },
+    finalizers: ['finalizer.postgres.letsbuild.com'],
   },
   spec: {
     databaseName: databaseName,
@@ -53,6 +58,7 @@ local user(username, databaseName, priv, secretName='', name='', schemaCreation=
     annotations: {
       'argocd.argoproj.io/sync-wave': '-2',
     },
+    finalizers: ['finalizer.postgres.letsbuild.com'],
   },
   spec: {
     username: username,
@@ -83,6 +89,7 @@ local publication(name, databaseName, replicaUser, tables=[], secretName='', pub
     annotations: {
       'argocd.argoproj.io/sync-wave': '-1',
     },
+    finalizers: ['finalizer.postgres.letsbuild.com'],
   },
   spec: {
     publicationName: if publicationName == '' then name else publicationName,
@@ -111,6 +118,7 @@ local subscription(name, slotName, databaseName, publication, subscriptionName='
     annotations: {
       'argocd.argoproj.io/sync-wave': '-1',
     },
+    finalizers: ['finalizer.postgres.letsbuild.com'],
   },
   spec: {
     subscriptionName: if subscriptionName == '' then name else subscriptionName,
