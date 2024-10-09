@@ -67,7 +67,7 @@ local user(username, databaseName, priv, secretName='', name='', schemaCreation=
     },
     grant: {
       databaseRef: {
-        name: databaseName
+        name: databaseName,
       },
       schemaCreation: schemaCreation,
       priv: priv,
@@ -75,7 +75,7 @@ local user(username, databaseName, priv, secretName='', name='', schemaCreation=
   },
 };
 
-local publication(name, databaseName, replicaUser, tables=[], secretName='', publicationName='',) = {
+local publication(name, databaseName, replicaUser, tables=[], secretName='', publicationName='', tablesColumns=[]) = {
 
   local defaultName = '%(database)s-%(user)s' % {
     database: databaseName,
@@ -97,10 +97,10 @@ local publication(name, databaseName, replicaUser, tables=[], secretName='', pub
       name: if secretName == '' then defaultName else secretName,
     },
     databaseRef: {
-      name: databaseName
+      name: databaseName,
     },
     replicaUser: replicaUser,
-    [if tables != [] then 'tables']: tables,
+    [if tables != [] || tablesColumns != [] then 'tables']: [{ name: tableName } for tableName in tables] + tablesColumns,
   },
 };
 
@@ -124,7 +124,7 @@ local subscription(name, slotName, databaseName, publication, subscriptionName='
     subscriptionName: if subscriptionName == '' then name else subscriptionName,
     slotName: slotName,
     databaseRef: {
-      name: databaseName
+      name: databaseName,
     },
     publicationRef: {
       name: publication,
