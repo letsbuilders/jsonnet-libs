@@ -82,7 +82,7 @@ local publication(name, databaseName, replicaUser, tables=[], secretName='', pub
     user: name,
   },
 
-  apiVersion: 'postgres.letsbuild.com/v1alpha1',
+  apiVersion: 'postgres.letsbuild.com/v1alpha2',
   kind: 'Publication',
   metadata: {
     name: if name == '' then defaultName else name,
