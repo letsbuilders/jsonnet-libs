@@ -82,7 +82,7 @@ local publication(name, databaseName, replicaUser, tables=[], secretName='', pub
     user: name,
   },
 
-  apiVersion: 'postgres.letsbuild.com/v1alpha2',
+  apiVersion: 'postgres.letsbuild.com/v1alpha1',
   kind: 'Publication',
   metadata: {
     name: if name == '' then defaultName else name,
@@ -97,10 +97,15 @@ local publication(name, databaseName, replicaUser, tables=[], secretName='', pub
       name: if secretName == '' then defaultName else secretName,
     },
     databaseRef: {
-      name: databaseName,
+      name: databaseName
     },
     replicaUser: replicaUser,
-    [if tables != [] || tablesColumns != [] then 'tables']: [{ name: tableName } for tableName in tables] + tablesColumns,
+    [if tables != [] then 'tables']: tables,
+    [if tablesColumns != [] then
+    'query']: 'ALTER PUBLICATION %(publicationName)s SET ' % {publicationName: publicationName} + std.join(', ', std.map(
+      function(table) if std.length(table.columns) > 0 then 'TABLE ' + table.name + ' (' + std.join(', ', table.columns) + ')',
+      tablesColumns
+    ))
   },
 };
 
