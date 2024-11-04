@@ -51,7 +51,7 @@ local keda(config) = {
         metricType=(if std.objectHas(trigerConfig, 'metricType') then trigerConfig.metricType else 'AverageValue'),
       )
       for trigerConfig in config.keda.trigerConfigs
-    ],
+    ] + (if std.objectHas(config.keda, 'customTriger') then config.keda.customTriger else []),
   },
 };
 local horizontalPodAutoscaler(config) = (
