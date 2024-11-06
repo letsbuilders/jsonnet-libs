@@ -261,16 +261,16 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
   },
   rdsReadOnly:: {
     instanceReadOnly: s.upboundRds.rdsInstanceReadOnly(
-      name=s.rdsName,
+      name='%s-ro' % s.rdsName,
       region=c.aws.region,
       parameters=s.rdsParametersReadOnly,
       serviceNamespace=c.serviceNamespace,
-      secretName=s.rdsSecretName,
+      secretName='%s-ro' % s.rdsSecretName,
       tagSets=tagSets,
     ),
   },
   rdsParameterGroup:: {
-    instance: s.upboundRds.parameterGroup(
+    parametersRds: s.upboundRds.parameterGroup(
       name=s.rdsName,
       region=c.aws.region,
       parameters=s.parameterGroupParams,
