@@ -75,7 +75,7 @@ local user(username, databaseName, priv, secretName='', name='', schemaCreation=
   },
 };
 
-local publication(name, databaseName, replicaUser, tables=[], columns={}, secretName='', publicationName='',replicaSecretRef='') = {
+local publication(name, databaseName, replicaUser,schemas=[], tables=[], columns={}, secretName='', publicationName='',replicaSecretRef='') = {
 
   local defaultName = '%(database)s-%(user)s' % {
     database: databaseName,
@@ -100,6 +100,7 @@ local publication(name, databaseName, replicaUser, tables=[], columns={}, secret
       name: databaseName
     },
     replicaUser: replicaUser,
+    [if schemas != [] then 'schemas']: schemas,
     [if tables != [] then 'tables']: tables,
     [if columns != {} then 'columns']: columns,
     [if replicaSecretRef != '' then 'readReplica']: {secretRef: replicaSecretRef},
