@@ -56,7 +56,7 @@ local podMonitor(name, podLabels, namespace, metricsPortName, metricsPath='/metr
   },
 };
 
-local rules(name, rules, labels={ prometheus: 'operations' }) = {
+local rules(name, rules, cluster, labels={ prometheus: 'operations' }) = {
   apiVersion: 'monitoring.coreos.com/v1',
   kind: 'PrometheusRule',
   metadata: {
@@ -64,7 +64,21 @@ local rules(name, rules, labels={ prometheus: 'operations' }) = {
     name: name,
   },
   spec: {
-    groups: rules,
+    groups: [
+      {
+        name: rule.name,
+        rules: [
+          x {
+            annotations+: {
+              query: x.expr,
+              link: 'https://grafana.monitoring.%(cluster)s1.eu-west-1.aws.%(cluster)s.lb4.co' % { cluster: cluster },
+            },
+          }
+          for x in rule.rules
+        ],
+      }
+      for rule in rules
+    ],
   },
 };
 
