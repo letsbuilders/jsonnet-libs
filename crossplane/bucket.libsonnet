@@ -1,6 +1,6 @@
 {
   bucket(bucketName, region, serviceNamespace, tagSets, annotations={}, labels={}):: {
-    apiVersion: 's3.aws.upbound.io/v1beta1',
+    apiVersion: 's3.aws.upbound.io/v1beta2',
     kind: 'Bucket',
     metadata: {
       name: bucketName,
@@ -19,7 +19,7 @@
     },
   },
   bucketAcl(bucketName, region, acl, annotations={}, labels={}):: {
-    apiVersion: 's3.aws.upbound.io/v1beta1',
+    apiVersion: 's3.aws.upbound.io/v1beta2',
     kind: 'BucketACL',
     metadata: {
       annotations: annotations,
@@ -41,7 +41,7 @@
     },
   },
   bucketOwner(bucketName, region, annotations={}, labels={}):: {
-    apiVersion: 's3.aws.upbound.io/v1beta1',
+    apiVersion: 's3.aws.upbound.io/v1beta2',
     kind: 'BucketOwnershipControls',
     metadata: {
       annotations: annotations,
@@ -58,11 +58,9 @@
             bucket: bucketName,
           },
         },
-        rule: [
-          {
-            objectOwnership: 'BucketOwnerPreferred',
-          },
-        ],
+        rule: {
+          objectOwnership: 'BucketOwnerPreferred',
+        },
       },
     },
   },
@@ -111,7 +109,7 @@
     },
   },
   bucketLifeCycle(bucketName, region, rules, annotations={}, labels={}):: {
-    apiVersion: 's3.aws.upbound.io/v1beta1',
+    apiVersion: 's3.aws.upbound.io/v1beta2',
     kind: 'BucketLifecycleConfiguration',
     metadata: {
       annotations: annotations,
@@ -154,7 +152,7 @@
     },
   },
   bucketVersioning(bucketName, region, status='Enabled', annotations={}, labels={}):: {
-    apiVersion: 's3.aws.upbound.io/v1beta1',
+    apiVersion: 's3.aws.upbound.io/v1beta2',
     kind: 'BucketVersioning',
     metadata: {
       annotations: annotations,
@@ -171,11 +169,9 @@
           },
         },
         region: region,
-        versioningConfiguration: [
-          {
-            status: status,
-          },
-        ],
+        versioningConfiguration: {
+          status: status,
+        },
       },
     },
   },
@@ -202,7 +198,7 @@
     },
   },
   bucketEncryption(bucketName, region, encryptionRules, annotations={}, labels={}):: {
-    apiVersion: 's3.aws.upbound.io/v1beta1',
+    apiVersion: 's3.aws.upbound.io/v1beta2',
     kind: 'BucketServerSideEncryptionConfiguration',
     metadata: {
       annotations: annotations,
