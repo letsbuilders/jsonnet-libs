@@ -20,6 +20,11 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
       clusterName: error 'clusterName must be provided',
       accountName: error 'accountName must be provided',
       region: error 'region must be provided',
+      bucketReplication: {
+        enabled: false,
+        roleName: '',
+        accountId: '',
+      },
       bucket: {
         acl: 'private',
         scan: false,
@@ -127,6 +132,55 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
     ],
   },
 
+  allowBucketWithReplication:: {
+    Version: '2012-10-17',
+    Statement: [
+      {
+        Sid: 'AllowBucketReplication',
+        Action: [
+          's3:List*',
+          's3:GetBucketVersioning',
+          's3:PutBucketVersioning',
+        ],
+        Effect: 'Allow',
+        Resource: ['arn:aws:s3:::%s' % s.bucketName],
+        Principal: {
+          AWS: 'arn:aws:iam::%(accountId)s:role/%(roleName)s' % { accountId: c.aws.bucketReplication.accountId, roleName: s.aws.bucketReplication.roleName },
+        },
+      },
+      {
+        Sid: 'AllowBatchJobPrivate',
+        Action: [
+          's3:ReplicateDelete',
+          's3:ReplicateObject',
+        ],
+        Effect: 'Allow',
+        Resource: ['arn:aws:s3:::%s/*' % s.bucketName],
+        Principal: {
+          AWS: 'arn:aws:iam::%(accountId)s:role/%(roleName)s' % { accountId: c.aws.bucketReplication.accountId, roleName: s.aws.bucketReplication.roleName },
+        },
+      },
+      {
+        Sid: 'DownloadandUpload',
+        Action: ['s3:GetObject', 's3:GetObjectAcl', 's3:GetObjectVersion', 's3:PutObject', 's3:PutObjectAcl', 's3:DeleteObject', 's3:DeleteObjectVersion'],
+        Effect: 'Allow',
+        Resource: ['arn:aws:s3:::%s/*' % s.bucketName],
+        Principal: {
+          AWS: 'arn:aws:iam::%(accountId)s:role/%(roleName)s' % { accountId: c.aws.accountId, roleName: s.roleName },
+        },
+      },
+      {
+        Sid: 'List',
+        Action: ['s3:ListBucket'],
+        Effect: 'Allow',
+        Resource: ['arn:aws:s3:::%s' % s.bucketName],
+        Principal: {
+          AWS: 'arn:aws:iam::%(accountId)s:role/%(roleName)s' % { accountId: c.aws.accountId, roleName: s.roleName },
+        },
+      },
+    ],
+  },
+
   keyPolicy:: {
     Version: '2012-10-17',
     Statement: [
@@ -187,7 +241,11 @@ local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
       bucketName=s.bucketName,
       region=c.aws.region,
     ),
-    bucketPolicy: s.upboundBucket.bucketPolicy(
+    bucketPolicy: if c.aws.bucketReplication.enabled == true then s.upboundBucket.bucketPolicy(
+      bucketName=s.bucketName,
+      region=c.aws.region,
+      policy=s.allowBucketWithReplication,
+    ) else s.upboundBucket.bucketPolicy(
       bucketName=s.bucketName,
       region=c.aws.region,
       policy=s.allowRoleToBucketPolicy,
