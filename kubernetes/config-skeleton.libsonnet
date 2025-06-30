@@ -245,7 +245,7 @@
       annotations+: {
         // ArgoCD sync settings
         'argocd.argoproj.io/hook': 'Sync',
-        'argocd.argoproj.io/hook-delete-policy': 'BeforeHookCreation',
+        'argocd.argoproj.io/hook-delete-policy': 'HookSucceeded',
         'argocd.argoproj.io/sync-wave': '-1',
       },
       podAnnotations+: {
