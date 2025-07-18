@@ -200,6 +200,7 @@ local ingressSpec(config, serviceObject) =
     { name: config.name, app: config.name, 'letsbuild.com/service': config.name }
     + if std.objectHas(config, 'labels') then config.labels else {}
   )
+  + ingress.spec.withIngressClassName(ingressClass)
   + ingress.spec.withRules([
     {
       host: host,
