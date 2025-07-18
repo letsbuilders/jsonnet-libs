@@ -14,10 +14,10 @@
       "source": {
         "git": {
           "remote": "https://github.com/jsonnet-libs/k8s-libsonnet.git",
-          "subdir": "1.29"
+          "subdir": "1.31"
         }
       },
-      "version": "bf9a62cfd32a58c071b8410bfcdec058475dd25e"
+      "version": "14aa0545f3b789c3fa4ffe19ef9709ec5fa8c147"
     }
   ],
   "legacyImports": true
