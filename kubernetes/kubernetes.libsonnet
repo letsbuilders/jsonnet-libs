@@ -139,40 +139,6 @@ local containerSpecs(containersConfig) = [
   for cont in containersConfig
 ];
 
-local publicApiIngressSpec(config) =
-  local ingress = k.networking.v1.ingress;
-
-  ingress.new(name=config.name)
-  + ingress.metadata.withAnnotations(
-    {
-      'kubernetes.io/ingress.class': 'nginx-public',
-      'argocd.argoproj.io/sync-wave': '1',
-    }
-    // Merge with config-specified annotations
-    + if std.objectHas(config, 'annotations') then config.annotations else {}
-  )
-  + ingress.metadata.withLabels(
-    { name: config.name, app: config.name, 'letsbuild.com/service': config.name }
-    // Merge with config-specified annotations
-    + if std.objectHas(config, 'labels') then config.labels else {}
-  )
-  + ingress.spec.withRules([
-    {
-      host: host,
-      http: {
-        paths: [
-          {
-            path: '/%(name)s%(path)s' % { name: config.name, path: path },
-            pathType: 'Prefix',
-            backend: { service: { name: 'gateway', port: { number: 80 } } },
-          }
-          for path in config.paths
-        ],
-      },
-    }
-    for host in config.hosts
-  ]);
-
 local ingressSpec(config, serviceObject) =
   local ingress = k.networking.v1.ingress;
   // TODO After we decide on which Ingress Contoller we'll be using some logic may be simplified
@@ -348,24 +314,6 @@ local letsbuildServiceDeployment(
 
   ingress: if withIngress then ingressSpec(ic, s.service),
 
-  publicApiIngress: if withPublicApi then publicApiIngressSpec(publicApiConfig),
-
-  aproplanApiIngress: if withAproplanApi then publicApiIngressSpec(aproplanApiConfig) + {
-    metadata+: { name: 'aproplan-%s' % super.name },
-    spec+: {
-      rules: [
-        rule {
-          http+: {
-            paths: [
-              path { backend+: { service+: { name: 'aproplan-gateway' } } }
-              for path in super.paths
-            ],
-          },
-        }
-        for rule in super.rules
-      ],
-    },
-  },
 };
 
 local letsbuildServiceStatefulSet(statefulsetConfig, withService=true, withIngress=false, ingressConfig={}) = {
