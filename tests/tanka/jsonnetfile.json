@@ -24,6 +24,14 @@
         }
       },
       "version": ""
+    },
+        {
+      "source": {
+        "local": {
+          "directory": "../../redis"
+        }
+      },
+      "version": ""
     }
   ],
   "legacyImports": true
