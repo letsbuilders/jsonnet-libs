@@ -10,6 +10,7 @@ jobs:
     name: Test jsonnet libs
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         testcase: [ simple, aws, postgres, redis ]
     env:
