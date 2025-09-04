@@ -33,11 +33,11 @@
       "source": {
         "git": {
           "remote": "https://github.com/jsonnet-libs/k8s-libsonnet.git",
-          "subdir": "1.26"
+          "subdir": "1.31"
         }
       },
-      "version": "bf9a62cfd32a58c071b8410bfcdec058475dd25e",
-      "sum": "fLShxv/gGx8+Jay43Kb0hjvGXCrwJ+2XJ1Hoir2yBZM="
+      "version": "14aa0545f3b789c3fa4ffe19ef9709ec5fa8c147",
+      "sum": "JfAgliZt48zaZY3cQ4DWo93cNVoEnij3Y6Eyl2m/dss="
     },
     {
       "source": {
@@ -51,6 +51,14 @@
       "source": {
         "local": {
           "directory": "../../postgres"
+        }
+      },
+      "version": ""
+    },
+    {
+      "source": {
+        "local": {
+          "directory": "../../redis"
         }
       },
       "version": ""
