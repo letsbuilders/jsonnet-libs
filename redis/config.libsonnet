@@ -89,8 +89,7 @@
       annotations: {},
     },
     resources: {
-//      limits: { memory: '256Mi' },
-      limits: { memory: '1Gi' },
+      limits: { memory: '256Mi' },
       requests: {
         cpu: '50m',
         memory: '128Mi',
