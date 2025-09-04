@@ -10,14 +10,14 @@ local container = k.core.v1.container;
     container.resources.withLimits(c.resources.limits) +
     container.resources.withRequests(c.resources.requests) +
 
-    container.livenessProbe.exec.withCommand(['/bin/sh', '-c', 'redis-cli -a $(REDIS_PASSWORD) ping']) +
+    container.livenessProbe.exec.withCommand(['/bin/sh', '-c', 'REDISCLI_AUTH="$REDIS_PASSWORD" redis-cli ping']) +
     container.livenessProbe.withFailureThreshold(c.livenessProbe.failureThreshold) +
     container.livenessProbe.withInitialDelaySeconds(c.livenessProbe.initialDelaySeconds) +
     container.livenessProbe.withPeriodSeconds(c.livenessProbe.periodSeconds) +
     container.livenessProbe.withSuccessThreshold(c.livenessProbe.successThreshold) +
     container.livenessProbe.withTimeoutSeconds(c.livenessProbe.timeoutSeconds) +
 
-    container.readinessProbe.exec.withCommand(['/bin/sh', '-c', 'redis-cli -a $(REDIS_PASSWORD) ping']) +
+    container.readinessProbe.exec.withCommand(['/bin/sh', '-c', 'REDISCLI_AUTH="$REDIS_PASSWORD" redis-cli ping']) +
     container.readinessProbe.withFailureThreshold(c.readinessProbe.failureThreshold) +
     container.readinessProbe.withInitialDelaySeconds(c.readinessProbe.initialDelaySeconds) +
     container.readinessProbe.withPeriodSeconds(c.readinessProbe.periodSeconds) +

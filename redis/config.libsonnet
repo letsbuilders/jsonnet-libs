@@ -45,6 +45,7 @@
       nodeAffinity: {
         requiredDuringSchedulingIgnoredDuringExecution: {
           nodeSelectorTerms: [],
+          assert std.length(self.nodeSelectorTerms) > 0 : 'nodeSelectorTerms cannot be empty',
         },
       },
     },
@@ -66,7 +67,7 @@
     },
     config: {
       mountPath: '/usr/local/etc/redis',
-      _redisMaxMem:: (function(x) std.asciiLower(std.strReplace(x, 'i', 'b')))(s.resources.limits.memory),
+      _redisMaxMem:: (function(x) std.format('%dmb', (std.parseInt(std.substr(x, 0, std.length(x) - 2) ) * 0.8 * (if std.endsWith(x, 'Gi') then 1024 else 1))))(s.resources.limits.memory),
       content: {
         'master.conf': |||
           dir /data
@@ -95,7 +96,8 @@
       annotations: {},
     },
     resources: {
-      limits: { memory: '256Mi' },
+//      limits: { memory: '256Mi' },
+      limits: { memory: '1Gi' },
       requests: {
         cpu: '50m',
         memory: '128Mi',
