@@ -51,23 +51,16 @@
     },
     tolerations: [],
     command: [
-      'redis-server',
-      '--include',
-      '%s/redis.conf' % s.config.mountPath,
-      '--include',
-      '%s/master.conf' % s.config.mountPath,
-      '--port',
-      '$(REDIS_PORT)',
-      '--requirepass',
-      '$(REDIS_PASSWORD)',
+      '/bin/sh',
+      '-c',
+      'redis-server --include %(mountPath)s/redis.conf --include %(mountPath)s/master.conf --port ${REDIS_PORT} --requirepass ${REDIS_PASSWORD}' % { mountPath: s.config.mountPath },
     ],
-
     auth: {
       password: error '_config.auth.password cannot be empty',
     },
     config: {
       mountPath: '/usr/local/etc/redis',
-      _redisMaxMem:: (function(x) std.format('%dmb', (std.parseInt(std.substr(x, 0, std.length(x) - 2) ) * 0.8 * (if std.endsWith(x, 'Gi') then 1024 else 1))))(s.resources.limits.memory),
+      _redisMaxMem:: (function(x) std.format('%dmb', (std.parseInt(std.substr(x, 0, std.length(x) - 2)) * 0.8 * (if std.endsWith(x, 'Gi') then 1024 else 1))))(s.resources.limits.memory),
       content: {
         'master.conf': |||
           dir /data

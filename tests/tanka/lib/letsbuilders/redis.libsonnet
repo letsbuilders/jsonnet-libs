@@ -28,7 +28,7 @@ local redis = import 'redis/redis.libsonnet';
     ],
     auth: {
       password: 'password',
-    }
+    },
   },
-  redis: redis.redis($._config)
+  redis: redis.redis($._config),
 }
