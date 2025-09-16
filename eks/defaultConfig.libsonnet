@@ -174,7 +174,6 @@
           certManager: true,
         },
         attachPolicyARNs+: [
-          'arn:aws:iam::%(accountId)s:policy/%(name)s-management-crossplane' % s,
           'arn:aws:iam::%(accountId)s:policy/%(name)s-external-dns-dynamodb' % s,
         ],
       },
