@@ -12,6 +12,25 @@ local lbInitContainers = import 'kubernetes/init-containers.libsonnet';
         team: 'devops',
       },
 
+      volumes: [
+        {
+          name: 'tmp-dir',
+          path: '/tmp',
+          ephemeral: {
+            metadata: {
+              labels: $._config.deployment.podLabels,
+            },
+            spec: {
+              resources: {
+                requests: {
+                  storage: '20Gi',
+                },
+              },
+            },
+          },
+        },
+      ],
+
       // Autoscaling
       autoscaling+: {
         minReplicas: 1,
@@ -48,7 +67,7 @@ local lbInitContainers = import 'kubernetes/init-containers.libsonnet';
     statefulSet+: {
       name: 'test',
       podLabels+: {
-        team: 'devops'
+        team: 'devops',
       },
       container+: {
         // Main application
@@ -56,12 +75,12 @@ local lbInitContainers = import 'kubernetes/init-containers.libsonnet';
 
         repository: '111111111111.dkr.ecr.eu-west-1.amazonaws.com/service/test',
         tag: 'sha-%s' % std.extVar('tag'),
-      }
+      },
     },
     job+: {
       name: 'test',
       podLabels+: {
-        team: 'devops'
+        team: 'devops',
       },
       container+: {
         // Main application
@@ -69,7 +88,7 @@ local lbInitContainers = import 'kubernetes/init-containers.libsonnet';
 
         repository: '111111111111.dkr.ecr.eu-west-1.amazonaws.com/service/test',
         tag: 'sha-%s' % std.extVar('tag'),
-      }
+      },
     },
     ingress+: {
       host: '%(namespace)s.%(clusterDomain)s' % { namespace: s.namespace, clusterDomain: s.clusterDomain },
