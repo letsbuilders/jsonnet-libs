@@ -30,8 +30,13 @@ function(namespace='test') {
   assert std.isObject(self.data.serviceDeployment.deployment),
   assert std.isObject(self.data.serviceDeployment.deployment.spec.template.spec),
   assert std.equals(self.data.serviceDeployment.deployment.spec.template.spec.containers[0].resources.limits.memory, '200Mi'),
+  assert std.equals(self.data.serviceDeployment.deployment.spec.template.spec.containers[0].volumeMounts[0].name, 'tmp-dir'),
+  assert std.equals(self.data.serviceDeployment.deployment.spec.template.spec.containers[0].volumeMounts[0].mountPath, '/tmp'),
+  assert std.member(
+    [m.name for m in self.data.serviceDeployment.deployment.spec.template.spec.volumes],
+    'tmp-dir'
+  ),
   assert std.equals(self.data.serviceDeployment.deployment.spec.template.spec.containers[0].resources.requests.memory, '100Mi'),
-
 
 
 }
