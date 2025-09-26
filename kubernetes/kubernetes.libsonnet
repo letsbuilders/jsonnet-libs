@@ -241,6 +241,10 @@ local letsbuildServiceDeployment(
       [
         if std.objectHas(m, 'claim') then volume.fromPersistentVolumeClaim(m.name, m.claim.claimName) else null
         for m in volumes
+      ] +
+      [
+        if std.objectHas(m, 'ephemeral') then volume.fromEphemeral(m.name, m.ephemeral) else null
+        for m in volumes
       ]
     ), keyF=function(x) x.name)),
 
@@ -360,6 +364,10 @@ local letsbuildServiceStatefulSet(statefulsetConfig, withService=true, withIngre
       ] +
       [
         if std.objectHas(m, 'claim') then volume.fromPersistentVolumeClaim(m.name, m.claim.claimName) else null
+        for m in volumes
+      ] +
+      [
+        if std.objectHas(m, 'ephemeral') then volume.fromEphemeral(m.name, m.ephemeral) else null
         for m in volumes
       ]
     ), keyF=function(x) x.name)),
