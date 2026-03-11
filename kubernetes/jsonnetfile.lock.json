@@ -14,6 +14,16 @@
     {
       "source": {
         "git": {
+          "remote": "https://github.com/jsonnet-libs/gateway-api-libsonnet.git",
+          "subdir": "1.4"
+        }
+      },
+      "version": "3fa622d87a7ec729c063e6d83a3911c726c83414",
+      "sum": "WCOA1KwDTExIvUmz6GYMHvfPrUcN+8G3tsdqvVCC1e4="
+    },
+    {
+      "source": {
+        "git": {
           "remote": "https://github.com/jsonnet-libs/k8s-libsonnet.git",
           "subdir": "1.31"
         }
