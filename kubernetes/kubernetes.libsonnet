@@ -140,9 +140,11 @@ local containerSpecs(containersConfig) = [
 ];
 
 local httpRouteSpec(config) =
-  local gatewayApi = import "github.com/jsonnet-libs/gateway-api-libsonnet/1.4/main.libsonnet";
+  local gatewayApi = import 'github.com/jsonnet-libs/gateway-api-libsonnet/1.4/main.libsonnet';
   local httpRoute = gatewayApi.gateway.v1.httpRoute;
   httpRoute.new(config.name) +
+  httpRoute.metadata.withLabels(config.labels) +
+  httpRoute.metadata.withAnnotations(config.annotations) +
   httpRoute.spec.withHostnames(config.hostnames) +
   httpRoute.spec.withRules(config.rules) +
   httpRoute.spec.withParentRefs(config.parentRefs);

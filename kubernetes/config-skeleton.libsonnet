@@ -257,7 +257,7 @@
         }],
         // from the gateway-api spec about backendRefs:
         // If unspecified, the rule performs no forwarding. If unspecified and no filters are specified that would result in a response being sent, a 404 error code is returned.
-        _backendRefs:
+        _backendRefs::
           if std.objectHas(common.container, 'ports') then
             {
               name: common.name,
@@ -265,6 +265,8 @@
             }
           else
             null,
+        labels: common.labels,
+        annotations: if _class == 'external' then { 'letsbuild.com/public': 'true' } else {},
         rules: [
           {
             matches: r._matches,
