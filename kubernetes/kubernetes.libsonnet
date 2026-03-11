@@ -147,6 +147,7 @@ local httpRouteSpec(config) =
   httpRoute.metadata.withAnnotations(config.annotations) +
   httpRoute.spec.withHostnames(config.hostnames) +
   httpRoute.spec.withRules(config.rules) +
+  httpRoute.spec.withFilters(config.filters) +
   httpRoute.spec.withParentRefs(config.parentRefs);
 
 local ingressSpec(config, serviceObject) =
