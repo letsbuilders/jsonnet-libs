@@ -267,11 +267,12 @@
             null,
         labels: common.labels,
         annotations: if r._class == 'external' then { 'letsbuild.com/public': 'true' } else {},
-        filters: [],
+        _filters:: [],
         rules: [
           {
             matches: r._matches,
             backendRefs: r._backendRefs,
+            filters: r._filters,
           },
         ],
       },
