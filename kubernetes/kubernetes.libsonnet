@@ -144,8 +144,8 @@ local httpRouteSpec(config) =
   local httpRoute = gatewayApi.gateway.v1.httpRoute;
   httpRoute.new(config.name) +
   httpRoute.spec.withHostnames(config.hostnames) +
-  httproute.spec.withRules(config.rules) +
-  httproute.spec.withParentRefs(config.parentRefs);
+  httpRoute.spec.withRules(config.rules) +
+  httpRoute.spec.withParentRefs(config.parentRefs);
 
 local ingressSpec(config, serviceObject) =
   local ingress = k.networking.v1.ingress;
