@@ -267,7 +267,7 @@
           else
             null,
         labels: common.labels,
-        annotations: if _class == 'external' then { 'letsbuild.com/public': 'true' } else {},
+        annotations: if r._class == 'external' then { 'letsbuild.com/public': 'true' } else {},
         rules: [
           {
             matches: r._matches,
