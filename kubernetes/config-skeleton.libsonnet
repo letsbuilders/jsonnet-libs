@@ -255,17 +255,20 @@
           kind: 'Gateway',
           name: r._class,
         }],
+        // from the gateway-api spec about backendRefs:
+        // If unspecified, the rule performs no forwarding. If unspecified and no filters are specified that would result in a response being sent, a 404 error code is returned.
+        _backendRefs:
+          if std.objectHas(common.container, 'ports') then
+            {
+              name: common.name,
+              port: common.container.ports[0].port,
+            }
+          else
+            null,
         rules: [
           {
             matches: r._matches,
-            // from the gateway-api spec about backendRefs:
-            // If unspecified, the rule performs no forwarding. If unspecified and no filters are specified that would result in a response being sent, a 404 error code is returned.
-            [if std.objectHas(common.container, 'ports') then 'backendRefs' else null]: [
-              {
-                name: common.name,
-                port: common.container.ports[0].port,
-              },
-            ],
+            backendRefs: r._backendRefs,
           },
         ],
       },
