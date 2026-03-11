@@ -233,6 +233,42 @@
 
       sidecarContainers: [],
       initContainers: [],
+
+      routes: {
+        local r = self,
+        name: common.name,
+        // we're trying to be smart about generating route rules and somewhat backwards compatible with how we've generated ingress configs
+        // _matches can be overriden to specify additional matches and it will be used to match requests and send them to a default backendRef
+        // but given the complex nature of matches in HTTPRoute (we can match against method, header, query param or path
+        // this object had to be complex itself
+        // _paths is the equivalent of _config.ingress.paths
+        // for basic scenarios it should be enough to use _paths as one would do for ingresses
+        _paths:: ['/'],
+        _matches:: [
+          { path: { value: path } }
+          for path in r._paths
+        ],
+        // assume using an external gateway
+        _class: 'external',
+        parentRefs: [{
+          group: 'gateway.networking.k8s.io',
+          kind: 'Gateway',
+          name: r._class,
+        }],
+        rules: [
+          {
+            matches: r._matches,
+            // from the gateway-api spec about backendRefs:
+            // If unspecified, the rule performs no forwarding. If unspecified and no filters are specified that would result in a response being sent, a 404 error code is returned.
+            [if std.objectHas(common.container, 'ports') then 'backendRefs' else null]: [
+              {
+                name: common.name,
+                port: common.container.ports[0].port,
+              },
+            ],
+          },
+        ],
+      },
     },
 
     deployment: s.common {
@@ -279,6 +315,16 @@
 
       // Object annotations
       annotations: {},
+    },
+    httpRoute: {
+      name: s.name,
+      hostnames: [],
+      labels: {
+        'app.kubernetes.io/name': s.name,
+        'app.kubernetes.io/instance': '%s-%s' % [s.name, s.namespace],
+        'app.kubernetes.io/part-of': 'letsbuild',
+      },
+      matches: [{ path: { value: '/' } }],
     },
     publicAPI: {
       name: s.name,
