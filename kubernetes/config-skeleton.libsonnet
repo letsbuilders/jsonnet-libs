@@ -177,9 +177,10 @@
         local cont = self,
 
         name: common.name,
+        registry: error '_config.deployment.container.registry must be set',
         repository: error '_config.deployment.container.repository must be set',
         tag: error '_config.deployment.container.tag must be set',
-        image: '%(repository)s:%(tag)s' % { repository: cont.repository, tag: cont.tag },
+        image: '%(registry)s/%(repository)s:%(tag)s' % { registry: cont.registry, repository: cont.repository, tag: cont.tag },
 
         imagePullPolicy: 'IfNotPresent',
 
