@@ -38,14 +38,15 @@ local lbInitContainers = import 'kubernetes/init-containers.libsonnet';
       },
 
       initContainers+: [
-        lbInitContainers.waitForPostgres('test-service-postgres'),
+        lbInitContainers.waitForPostgres('test-service-postgres', registry='111111111111.dkr.ecr.eu-west-1.amazonaws.com'),
       ],
 
       container+: {
         // Main application
         name: 'test',
 
-        repository: '111111111111.dkr.ecr.eu-west-1.amazonaws.com/service/test',
+        registry: '111111111111.dkr.ecr.eu-west-1.amazonaws.com',
+        repository: 'service/test',
         tag: 'sha-%s' % std.extVar('tag'),
         // Resource requirements
         resourcesRequests: {
@@ -73,7 +74,8 @@ local lbInitContainers = import 'kubernetes/init-containers.libsonnet';
         // Main application
         name: 'test',
 
-        repository: '111111111111.dkr.ecr.eu-west-1.amazonaws.com/service/test',
+        registry: '111111111111.dkr.ecr.eu-west-1.amazonaws.com',
+        repository: 'service/test',
         tag: 'sha-%s' % std.extVar('tag'),
       },
     },
@@ -86,7 +88,8 @@ local lbInitContainers = import 'kubernetes/init-containers.libsonnet';
         // Main application
         name: 'test',
 
-        repository: '111111111111.dkr.ecr.eu-west-1.amazonaws.com/service/test',
+        registry: '111111111111.dkr.ecr.eu-west-1.amazonaws.com',
+        repository: 'service/test',
         tag: 'sha-%s' % std.extVar('tag'),
       },
     },
