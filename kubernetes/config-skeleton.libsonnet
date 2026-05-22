@@ -259,20 +259,29 @@
         // from the gateway-api spec about backendRefs:
         // If unspecified, the rule performs no forwarding. If unspecified and no filters are specified that would result in a response being sent, a 404 error code is returned.
         _backendRefs::
-          if std.objectHas(common.container, 'ports') then
-            {
-              name: common.name,
-              port: common.container.ports[0].port,
-            }
+          if std.objectHas(common.container, 'port') then
+            [
+              {
+                name: common.name,
+                port: common.container.port,
+              },
+            ]
+          else if std.objectHas(common.container, 'ports') then
+            [
+              {
+                name: common.name,
+                port: common.container.ports[0].port,
+              },
+            ]
           else
-            null,
+            [],
         labels: common.labels,
         annotations: if r._class == 'external' then { 'letsbuild.com/public': 'true' } else {},
         _filters:: [],
         rules: [
           {
             matches: r._matches,
-            backendRefs: r._backendRefs,
+            backendRefs: if std.length(r._backendRefs) > 0 then r._backendRefs else null,
             filters: r._filters,
           },
         ],
@@ -327,6 +336,8 @@
     httpRoute: {
       name: s.name,
       hostnames: [],
+      parentRefs: [],
+      rules: [],
       labels: {
         'app.kubernetes.io/name': s.name,
         'app.kubernetes.io/instance': '%s-%s' % [s.name, s.namespace],

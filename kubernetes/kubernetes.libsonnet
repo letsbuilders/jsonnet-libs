@@ -145,9 +145,9 @@ local httpRouteSpec(config) =
   httpRoute.new(config.name) +
   httpRoute.metadata.withLabels(config.labels) +
   httpRoute.metadata.withAnnotations(config.annotations) +
-  httpRoute.spec.withHostnames(config.hostnames) +
-  httpRoute.spec.withRules(config.rules) +
-  httpRoute.spec.withParentRefs(config.parentRefs);
+  (if std.objectHas(config, 'hostnames') && std.length(config.hostnames) > 0 then httpRoute.spec.withHostnames(config.hostnames) else {}) +
+  (if std.objectHas(config, 'rules') && std.length(config.rules) > 0 then httpRoute.spec.withRules(config.rules) else {}) +
+  (if std.objectHas(config, 'parentRefs') && std.length(config.parentRefs) > 0 then httpRoute.spec.withParentRefs(config.parentRefs) else {});
 
 local ingressSpec(config, serviceObject) =
   local ingress = k.networking.v1.ingress;
@@ -203,11 +203,11 @@ local letsbuildServiceDeployment(
   withIngress=false,
   withPublicApi=false,
   withAproplanApi=false,
-  withRoutes=false,
   withServiceAccountObject={},
   publicApiConfig={},
   aproplanApiConfig={},
   ingressConfig={},
+  withRoutes=false,
       ) = {
   local dc = deploymentConfig,
   local ic = ingressConfig,
