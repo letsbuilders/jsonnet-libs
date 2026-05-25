@@ -246,7 +246,7 @@
         // for basic scenarios it should be enough to use _paths as one would do for ingresses
         _paths:: ['/'],
         _matches:: [
-          { path: { value: path } }
+          { path: { value: path, type: 'PathPrefix' } }
           for path in r._paths
         ],
         // assume using an external gateway
