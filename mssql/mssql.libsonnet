@@ -1,7 +1,7 @@
 local resourceLabels(name, labels={}) =
   labels {
     'app.kubernetes.io/name': name,
-    'app.kubernetes.io/part-of': name,
+    'app.kubernetes.io/part-of': 'aproplan',
   };
 
 local database(name, secretRefName, databaseName='', labels={}) = {
