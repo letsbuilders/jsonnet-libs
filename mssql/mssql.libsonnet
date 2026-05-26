@@ -1,5 +1,3 @@
-
-
 local resourceLabels(name, labels={}) =
   labels {
     'app.kubernetes.io/name': name,
