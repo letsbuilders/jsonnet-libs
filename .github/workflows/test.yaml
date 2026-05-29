@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        testcase: [ simple, aws, postgres, redis ]
+        testcase: [ simple, aws, postgres, redis, routes ]
     env:
       GO111MODULE: on
 

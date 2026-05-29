@@ -202,38 +202,92 @@
           ENVIRONMENT: s.namespace,
         },
         extraEnvVars: [
-                        {
-                          name: 'HOST_IP',
-                          valueFrom: { fieldRef: { fieldPath: 'status.hostIP' } },
-                        },
-                        {
-                          name: 'POD_IP',
-                          valueFrom: { fieldRef: { fieldPath: 'status.podIP' } },
-                        },
-                        {
-                          name: 'OTEL_RESOURCE_ATTRIBUTES',
-                          value: 'k8s.pod.ip=$(POD_IP),container=%s' % cont.name,
-                        },
-                      ]
-                      + (
-                        // configure .NET garbage collector if ASPNETCORE_ENVIRONMENT is set
-                        // set the GCHeapHardLimit to 80% of requested memory
-                        if std.objectHas(cont.envVars, 'ASPNETCORE_ENVIRONMENT') && std.objectHas(cont, 'resourcesRequests') && std.objectHas(cont.resourcesRequests, 'mem') then [{
-                          name: 'DOTNET_GCHeapHardLimit',
-                          value: '%x' % (0.8 * std.parseJson(
-                                           if std.endsWith(cont.resourcesRequests.mem, 'Mi') then
-                                             std.strReplace(cont.resourcesRequests.mem, 'Mi', '000000')
-                                           else if std.endsWith(cont.resourcesRequests.mem, 'Gi') then
-                                             std.strReplace(cont.resourcesRequests.mem, 'Gi', '000000000')
-                                         )),
-                        }]
-                        else []
-                      ),
+          {
+            name: 'HOST_IP',
+            valueFrom: { fieldRef: { fieldPath: 'status.hostIP' } },
+          },
+          {
+            name: 'POD_IP',
+            valueFrom: { fieldRef: { fieldPath: 'status.podIP' } },
+          },
+          {
+            name: 'OTEL_RESOURCE_ATTRIBUTES',
+            value: 'k8s.pod.ip=$(POD_IP),container=%s' % cont.name,
+          },
+        ] + (
+          // configure .NET garbage collector if ASPNETCORE_ENVIRONMENT is set
+          // set the GCHeapHardLimit to 80% of requested memory
+          if std.objectHas(cont.envVars, 'ASPNETCORE_ENVIRONMENT') && std.objectHas(cont, 'resourcesRequests') && std.objectHas(cont.resourcesRequests, 'mem') then [
+            {
+              name: 'DOTNET_GCHeapHardLimit',
+              value: '%x' % (0.8 * std.parseJson(
+                               if std.endsWith(cont.resourcesRequests.mem, 'Mi') then
+                                 std.strReplace(cont.resourcesRequests.mem, 'Mi', '000000')
+                               else if std.endsWith(cont.resourcesRequests.mem, 'Gi') then
+                                 std.strReplace(cont.resourcesRequests.mem, 'Gi', '000000000')
+                             )),
+            },
+          ]
+          else []
+        ),
         envFrom: [],
       },
 
       sidecarContainers: [],
       initContainers: [],
+
+      routes: {
+        local r = self,
+        name: common.name,
+        // we're trying to be smart about generating route rules and somewhat backwards compatible with how we've generated ingress configs
+        // _matches can be overriden to specify additional matches and it will be used to match requests and send them to a default backendRef
+        // but given the complex nature of matches in HTTPRoute (we can match against method, header, query param or path
+        // this object had to be complex itself
+        // _paths is the equivalent of _config.ingress.paths
+        // for basic scenarios it should be enough to use _paths as one would do for ingresses
+        _paths:: ['/'],
+        _matches:: [
+          { path: { value: path, type: 'PathPrefix' } }
+          for path in r._paths
+        ],
+        // assume using an external gateway
+        _class: 'external',
+        parentRefs: [{
+          group: 'gateway.networking.k8s.io',
+          kind: 'Gateway',
+          name: r._class,
+        }],
+        // from the gateway-api spec about backendRefs:
+        // If unspecified, the rule performs no forwarding. If unspecified and no filters are specified that would result in a response being sent, a 404 error code is returned.
+        _backendRefs::
+          if std.objectHas(common.container, 'port') then
+            [
+              {
+                name: common.name,
+                port: common.container.port,
+              },
+            ]
+          else if std.objectHas(common.container, 'ports') then
+            [
+              {
+                name: common.name,
+                port: common.container.ports[0].port,
+              },
+            ]
+          else
+            [],
+        labels: common.labels,
+        annotations: if r._class == 'external' then { 'letsbuild.com/public': 'true' } else {},
+        _filters:: [],
+        rules: [
+          // std.prune to remove empty fields if any to prevent creating malformed rules
+          std.prune({
+            matches: r._matches,
+            backendRefs: if std.length(r._backendRefs) > 0 then r._backendRefs else null,
+            filters: r._filters,
+          }),
+        ],
+      },
     },
 
     deployment: s.common {

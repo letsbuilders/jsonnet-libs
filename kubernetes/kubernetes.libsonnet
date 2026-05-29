@@ -139,6 +139,16 @@ local containerSpecs(containersConfig) = [
   for cont in containersConfig
 ];
 
+local httpRouteSpec(config) =
+  local gatewayApi = import 'github.com/jsonnet-libs/gateway-api-libsonnet/1.4/main.libsonnet';
+  local httpRoute = gatewayApi.gateway.v1.httpRoute;
+  httpRoute.new(config.name) +
+  httpRoute.metadata.withLabels(config.labels) +
+  httpRoute.metadata.withAnnotations(config.annotations) +
+  (if std.objectHas(config, 'hostnames') && std.length(config.hostnames) > 0 then httpRoute.spec.withHostnames(config.hostnames) else {}) +
+  (if std.objectHas(config, 'rules') && std.length(config.rules) > 0 then httpRoute.spec.withRules(config.rules) else {}) +
+  (if std.objectHas(config, 'parentRefs') && std.length(config.parentRefs) > 0 then httpRoute.spec.withParentRefs(config.parentRefs) else {});
+
 local ingressSpec(config, serviceObject) =
   local ingress = k.networking.v1.ingress;
   // TODO After we decide on which Ingress Contoller we'll be using some logic may be simplified
@@ -197,6 +207,7 @@ local letsbuildServiceDeployment(
   publicApiConfig={},
   aproplanApiConfig={},
   ingressConfig={},
+  withRoutes=false,
       ) = {
   local dc = deploymentConfig,
   local ic = ingressConfig,
@@ -317,6 +328,8 @@ local letsbuildServiceDeployment(
   ),
 
   ingress: if withIngress then ingressSpec(ic, s.service),
+
+  routes: if withRoutes then httpRouteSpec(dc.routes),
 
 };
 
