@@ -18,7 +18,7 @@ local database(name, secretRefName, databaseName='', labels={}) = {
 };
 
 
-local user(name, providerConfigName, permissions, databaseName='', connectionStringSecretName='', schema={}, labels={}) = {
+local user(name, providerConfigName='aproplan', permissions, databaseName='', connectionStringSecretName='', schema={}, labels={}) = {
   apiVersion: 'letsbuild.com/v1alpha1',
   kind: 'XMSSQLUser',
   metadata: {
