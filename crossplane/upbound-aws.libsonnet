@@ -1,11 +1,3 @@
-// Helper utilities for AWS resources
-local aws = import 'provider-aws.libsonnet';
-
-local role = aws.iam.v1beta1.role;
-local bucket = aws.s3.v1beta1.bucket;
-local bucketPolicy = aws.s3.v1alpha3.bucketPolicy;
-
-
 (import 'bucket.libsonnet') + {
   _config:: {
     local s = self,

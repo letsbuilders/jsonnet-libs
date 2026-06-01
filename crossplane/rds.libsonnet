@@ -18,7 +18,7 @@
   },
 
   rdsInstance(name, region, parameters, serviceNamespace, secretName, tagSets, annotations={}, labels={}):: {
-    apiVersion: 'rds.aws.upbound.io/v1beta2',
+    apiVersion: 'rds.aws.upbound.io/v1beta3',
     kind: 'Instance',
     metadata: {
       name: name,
@@ -49,7 +49,7 @@
   },
 
   rdsInstanceReadOnly(name, region, parameters, serviceNamespace, secretName, tagSets, annotations={}, labels={}):: {
-    apiVersion: 'rds.aws.upbound.io/v1beta2',
+    apiVersion: 'rds.aws.upbound.io/v1beta3',
     kind: 'Instance',
     metadata: {
       name: name,
