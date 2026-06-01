@@ -2,6 +2,7 @@ local lifecycleArrayFields = [
   'abortIncompleteMultipartUpload',
   'expiration',
   'filter',
+  'noncurrentVersionExpiration',
 ];
 
 local normalizeLifecycleRule(rule) =
