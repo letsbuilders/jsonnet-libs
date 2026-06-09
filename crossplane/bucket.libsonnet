@@ -1,3 +1,17 @@
+local lifecycleArrayFields = [
+  'abortIncompleteMultipartUpload',
+  'expiration',
+  'filter',
+  'noncurrentVersionExpiration',
+];
+
+local normalizeLifecycleRule(rule) =
+  rule + {
+    [field]: if std.isArray(rule[field]) then rule[field] else [rule[field]]
+    for field in lifecycleArrayFields
+    if std.objectHas(rule, field)
+  };
+
 {
   bucket(bucketName, region, serviceNamespace, tagSets, annotations={}, labels={}):: {
     apiVersion: 's3.aws.upbound.io/v1beta2',
@@ -126,7 +140,10 @@
             bucket: bucketName,
           },
         },
-        rule: rules,
+        rule: [
+          normalizeLifecycleRule(rule)
+          for rule in rules
+        ],
       },
     },
   },
