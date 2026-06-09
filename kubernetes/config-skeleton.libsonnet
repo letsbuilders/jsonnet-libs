@@ -252,10 +252,12 @@
         ],
         // assume using an external gateway
         _class: 'external',
+        _sectionName: null,
         parentRefs: [{
           group: 'gateway.networking.k8s.io',
           kind: 'Gateway',
           name: r._class,
+          [if std.isNull(r._sectionName) then null else 'sectionName' ]: r._sectionName,
         }],
         // from the gateway-api spec about backendRefs:
         // If unspecified, the rule performs no forwarding. If unspecified and no filters are specified that would result in a response being sent, a 404 error code is returned.
