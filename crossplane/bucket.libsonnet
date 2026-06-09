@@ -123,7 +123,7 @@ local normalizeLifecycleRule(rule) =
     },
   },
   bucketLifeCycle(bucketName, region, rules, annotations={}, labels={}):: {
-    apiVersion: 's3.aws.upbound.io/v1beta1',
+    apiVersion: 's3.aws.upbound.io/v1beta2',
     kind: 'BucketLifecycleConfiguration',
     metadata: {
       annotations: annotations,
