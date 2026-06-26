@@ -281,12 +281,14 @@
         labels: common.labels,
         annotations: if r._class == 'external' then { 'letsbuild.com/public': 'true' } else {},
         _filters:: [],
+        _timeouts:: {},
         rules: [
           // std.prune to remove empty fields if any to prevent creating malformed rules
           std.prune({
             matches: r._matches,
             backendRefs: if std.length(r._backendRefs) > 0 then r._backendRefs else null,
             filters: r._filters,
+            timeouts: r._timeouts,
           }),
         ],
       },
