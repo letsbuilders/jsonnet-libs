@@ -53,7 +53,10 @@ local lbInitContainers = import 'kubernetes/init-containers.libsonnet';
           cpu: '100m',
           mem: '100Mi',
         },
-        port: 80,
+        ports:[
+          { name: 'http-main', port: 80, containerPort: 8080 },
+          { name: 'http-metrics', port: 8443 },
+        ],
       },
       sidecars+: [
         {
