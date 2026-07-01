@@ -41,6 +41,8 @@ local objectMetadata(object, config) =
 local serviceSpec(object, config) =
   local service = k.core.v1.service;
 
+  assert std.objectHas(config.container, 'ports') : 'Service requested but no ports set on container. Object config: %s' % std.toString(config);
+
   util.serviceFor(object, nameFormat='%(port)s') +
   {
     spec+: {
