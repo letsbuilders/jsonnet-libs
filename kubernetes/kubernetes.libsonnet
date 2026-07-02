@@ -41,6 +41,8 @@ local objectMetadata(object, config) =
 local serviceSpec(object, config) =
   local service = k.core.v1.service;
 
+  assert std.objectHas(config.container, 'ports') : 'Service requested but no ports set on container. Object config: %s' % std.toString(config);
+
   util.serviceFor(object, nameFormat='%(port)s') +
   {
     spec+: {
@@ -50,6 +52,19 @@ local serviceSpec(object, config) =
         // Otherwise rolling updates won't be possible
         version:: null,
       },
+      ports: [
+        port + std.flatMap(
+          function(x)
+          if port.name == x.name then
+            // by default port number on the Deployment/StatefulSet equals the port number on the Service
+            // we don't always want that and can override this by specifying `port` and `containerPort` fields
+            // if the port specifies `containerPort` and port the service should be using `port` instead
+            if std.objectHas(x, 'containerPort') then [{port: x.port }] else [port]
+          else [],
+          config.container.ports
+        )[0]
+        for port in super.ports
+      ]
     },
   }
   + service.metadata.withLabels(
@@ -87,17 +102,12 @@ local containerSpecs(containersConfig) = [
   // The 'IfNotPresent' image pull policy will pull the image only if not present: https://kubernetes.io/docs/concepts/containers/images/
   + container.withImagePullPolicy(if std.objectHas(cont, 'imagePullPolicy') then cont.imagePullPolicy else 'IfNotPresent')
   + container.withPorts(
-    // Single port
-    if std.objectHas(cont, 'port')
+    if std.objectHas(cont, 'ports')
     then
       [
-        port.new(cont.name, cont.port)
-        + (if std.objectHas(cont, 'protocol') then port.withProtocol(cont.protocol) else {}),
-      ]
-    else if std.objectHas(cont, 'ports')
-    then
-      [
-        port.new(contPort.name, contPort.port)
+        // contPort can either only have a `port` field or `port` and `containerPort` fields
+        // if there's only `port` it should be used for both the Service and Container
+        port.new(contPort.name, (if std.objectHas(contPort, 'containerPort') then contPort.containerPort else contPort.port))
         + (if std.objectHas(contPort, 'protocol') then port.withProtocol(contPort.protocol) else {})
         for contPort in cont.ports
       ]
@@ -309,7 +319,7 @@ local letsbuildServiceDeployment(
     ),
 
   // We must generate a service if an ingress was requested
-  service: if withService || withIngress then serviceSpec(s.deployment, dc) else {},
+  service: if withService || (withIngress || withRoutes) then serviceSpec(s.deployment, dc) else {},
 
   autoscaling: (
     if dc.autoscaling.enabled then
@@ -333,7 +343,7 @@ local letsbuildServiceDeployment(
 
 };
 
-local letsbuildServiceStatefulSet(statefulsetConfig, withService=true, withIngress=false, ingressConfig={}) = {
+local letsbuildServiceStatefulSet(statefulsetConfig, withService=true, withIngress=false, ingressConfig={}, withRoutes=false) = {
   local sts = statefulsetConfig,
   local mainContainer = containerSpecs([sts.container]),
   local sidecars = containerSpecs(sts.sidecarContainers),
@@ -412,7 +422,7 @@ local letsbuildServiceStatefulSet(statefulsetConfig, withService=true, withIngre
     + (if sts.podAntiAffinity.enabledPreffered then statefulSet.spec.template.spec.affinity.podAntiAffinity.withPreferredDuringSchedulingIgnoredDuringExecution(sts.podAntiAffinity.preferred) else {})
     + (if sts.podAntiAffinity.enabledRequired then statefulSet.spec.template.spec.affinity.podAntiAffinity.withRequiredDuringSchedulingIgnoredDuringExecution(sts.podAntiAffinity.required) else {}),
 
-  service: if withService then serviceSpec(s.statefulSet, sts) else {},
+  service: if withService || (withIngress || withRoutes) then serviceSpec(s.statefulSet, sts) else {},
 
   ingress: if withIngress then ingressSpec(ic, s.service),
 

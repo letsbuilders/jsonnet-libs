@@ -53,9 +53,12 @@ local lbInitContainers = import 'kubernetes/init-containers.libsonnet';
           cpu: '100m',
           mem: '100Mi',
         },
-        port: 80,
+        ports: [
+          { name: 'http-main', port: 80, containerPort: 8080 },
+          { name: 'http-secondary', port: 8443 },
+        ],
       },
-      sidecars+: [
+      sidecarContainers+: [
         {
           // Sidecar container
           name: 'test-sidecar',
@@ -73,6 +76,10 @@ local lbInitContainers = import 'kubernetes/init-containers.libsonnet';
       container+: {
         // Main application
         name: 'test',
+
+        ports: [
+          { name: 'http-main', port: 80, containerPort: 8080 },
+        ],
 
         registry: '111111111111.dkr.ecr.eu-west-1.amazonaws.com',
         repository: 'service/test',

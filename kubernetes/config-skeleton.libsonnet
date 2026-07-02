@@ -262,14 +262,7 @@
         // from the gateway-api spec about backendRefs:
         // If unspecified, the rule performs no forwarding. If unspecified and no filters are specified that would result in a response being sent, a 404 error code is returned.
         _backendRefs::
-          if std.objectHas(common.container, 'port') then
-            [
-              {
-                name: common.name,
-                port: common.container.port,
-              },
-            ]
-          else if std.objectHas(common.container, 'ports') then
+          if std.objectHas(common.container, 'ports') then
             [
               {
                 name: common.name,
