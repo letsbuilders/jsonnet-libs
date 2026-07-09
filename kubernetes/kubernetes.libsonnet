@@ -476,4 +476,7 @@ local letsbuildJob(config, withServiceAccountObject={}) = {
   letsbuildServiceDeployment:: letsbuildServiceDeployment,
   letsbuildServiceStatefulSet:: letsbuildServiceStatefulSet,
   letsbuildJob:: letsbuildJob,
+
+  // Expose auxiliary methods
+  _httpRouteSpec:: httpRouteSpec,
 }
