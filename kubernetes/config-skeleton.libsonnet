@@ -257,7 +257,7 @@
           group: 'gateway.networking.k8s.io',
           kind: 'Gateway',
           name: r._class,
-          [if std.isNull(r._sectionName) then null else 'sectionName' ]: r._sectionName,
+          [if std.isNull(r._sectionName) then null else 'sectionName']: r._sectionName,
         }],
         // from the gateway-api spec about backendRefs:
         // If unspecified, the rule performs no forwarding. If unspecified and no filters are specified that would result in a response being sent, a 404 error code is returned.
@@ -275,6 +275,7 @@
         annotations: if r._class == 'external' then { 'letsbuild.com/public': 'true' } else {},
         _filters:: [],
         _timeouts:: {},
+        _sessionPersistence:: {},
         rules: [
           // std.prune to remove empty fields if any to prevent creating malformed rules
           std.prune({
@@ -282,6 +283,7 @@
             backendRefs: if std.length(r._backendRefs) > 0 then r._backendRefs else null,
             filters: r._filters,
             timeouts: r._timeouts,
+            sessionPersistence: r._sessionPersistence,
           }),
         ],
       },
