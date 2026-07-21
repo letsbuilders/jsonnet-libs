@@ -479,4 +479,5 @@ local letsbuildJob(config, withServiceAccountObject={}) = {
 
   // Expose auxiliary methods
   _httpRouteSpec:: httpRouteSpec,
+  _ingressSpec:: ingressSpec,
 }
